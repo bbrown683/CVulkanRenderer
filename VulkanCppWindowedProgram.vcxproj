@@ -160,29 +160,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="graphics\buffer.ixx" />
-    <ClCompile Include="graphics\cmd.cpp" />
-    <ClCompile Include="graphics\cmd.ixx" />
+    <ClCompile Include="graphics\buffer.cppm" />
+    <ClCompile Include="graphics\cmd.cppm" />
     <ClCompile Include="graphics\debug.cppm" />
-    <ClCompile Include="graphics\device.cpp" />
-    <ClCompile Include="graphics\framebuffer.ixx" />
-    <ClCompile Include="graphics\instance.cpp" />
-    <ClCompile Include="graphics\instance.ixx" />
+    <ClCompile Include="graphics\framebuffer.cppm" />
+    <ClCompile Include="graphics\instance.cppm" />
     <ClCompile Include="graphics\loader.cppm" />
-    <ClCompile Include="graphics\device.ixx" />
-    <ClCompile Include="graphics\pass.cpp" />
-    <ClCompile Include="graphics\pass.ixx" />
-    <ClCompile Include="graphics\queue.cpp" />
-    <ClCompile Include="graphics\queue.ixx" />
+    <ClCompile Include="graphics\device.cppm" />
+    <ClCompile Include="graphics\renderpass.cppm" />
+    <ClCompile Include="graphics\queue.cppm" />
     <ClCompile Include="graphics\renderer.cppm" />
-    <ClCompile Include="graphics\shader.cpp" />
-    <ClCompile Include="graphics\shader.ixx" />
-    <ClCompile Include="graphics\buffer.cpp" />
-    <ClCompile Include="graphics\swapchain.cpp" />
-    <ClCompile Include="graphics\swapchain.ixx" />
-    <ClCompile Include="graphics\window.cpp" />
-    <ClCompile Include="graphics\window.ixx" />
-    <ClCompile Include="main.cppm" />
+    <ClCompile Include="graphics\shader.cppm" />
+    <ClCompile Include="graphics\swapchain.cppm" />
+    <ClCompile Include="graphics\window.cppm" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\platform\sdl.hpp" />
