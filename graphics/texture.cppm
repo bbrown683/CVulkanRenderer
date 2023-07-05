@@ -32,7 +32,7 @@ public:
     CVulkanTexture() = default;
     CVulkanTexture(vk::Device device, vk::PhysicalDeviceMemoryProperties physicalDeviceMemoryProperties, uint8_t* bits, uint16_t width, uint16_t height, vk::Format format, vk::MemoryPropertyFlagBits memoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal, uint8_t mipLevels = 1, vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1) {
         auto extent = vk::Extent3D(width, height);
-        auto imageInfo = vk::ImageCreateInfo(vk::ImageCreateFlags(), vk::ImageType::e2D, format,
+        auto imageInfo = vk::ImageCreateInfo({}, vk::ImageType::e2D, format,
                                              extent, mipLevels, 1, samples, vk::ImageTiling::eOptimal,
                                              vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
                                              vk::SharingMode::eExclusive);

@@ -30,11 +30,10 @@
     <ClCompile Include="graphics\cmd.cppm">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\shader.cppm" />
+    <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\buffer.cppm" />
     <ClCompile Include="graphics\renderpass.cppm" />
     <ClCompile Include="graphics\framebuffer.cppm" />
-    <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\mesh.cppm" />
     <ClCompile Include="graphics\texture.cppm" />
     <ClCompile Include="graphics\camera.cppm" />
@@ -46,5 +45,9 @@
     <ClInclude Include="graphics\platform\SDL.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vertex.vert" />
+    <None Include="fragment.frag" />
   </ItemGroup>
 </Project>

@@ -63,7 +63,7 @@ public:
 
         std::vector<vk::DeviceQueueCreateInfo> queueInfos = { graphicsInfo, computeInfo, transferInfo };
         std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-        auto deviceInfo = vk::DeviceCreateInfo(vk::DeviceCreateFlags(), queueInfos, nullptr, deviceExtensions, &physicalDeviceFeatures);
+        auto deviceInfo = vk::DeviceCreateInfo({}, queueInfos, nullptr, deviceExtensions, &physicalDeviceFeatures);
         device = physicalDevice.createDeviceUnique(deviceInfo);
         CVulkanFunctionLoader::LoadDeviceFunctions(*device);
     }

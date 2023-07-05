@@ -11,7 +11,7 @@ import renderpass;
 import buffer;
 import framebuffer;
 import cmd;
-import shader;
+import pipeline;
 
 export class CVulkanRenderer {
     CVulkanInstance instance;
@@ -25,6 +25,7 @@ export class CVulkanRenderer {
     CVulkanBufferAllocator bufferAllocator;
     CVulkanCommandPool commandPool;
     CVulkanCommandBuffer commandBuffer;
+    CVulkanGraphicsPipeline pipeline;
 public:
     CVulkanRenderer() = default;
     CVulkanRenderer(SDL_Window* window) {
@@ -59,6 +60,8 @@ public:
         auto vkCommandPool = commandPool.GetVkCommandPool();
 
         commandBuffer = CVulkanCommandBuffer(vkDevice, vkCommandPool);
+
+        pipeline = CVulkanGraphicsPipeline(vkDevice, vkRenderPass, "vertex.spv", "fragment.spv", surfaceExtent);
     }
 
     CVulkanRenderer(const CVulkanRenderer&) = default;

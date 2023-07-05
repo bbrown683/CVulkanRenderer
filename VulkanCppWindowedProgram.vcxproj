@@ -120,6 +120,14 @@
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(VULKAN_SDK)\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>glslc.exe -c --target-env=vulkan vertex.vert -o vertex.spv
+glslc.exe -c --target-env=vulkan fragment.frag -o fragment.spv</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -173,11 +181,10 @@
     <ClCompile Include="graphics\loader.cppm" />
     <ClCompile Include="graphics\device.cppm" />
     <ClCompile Include="graphics\mesh.cppm" />
-    <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\renderpass.cppm" />
     <ClCompile Include="graphics\queue.cppm" />
     <ClCompile Include="graphics\renderer.cppm" />
-    <ClCompile Include="graphics\shader.cppm" />
+    <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\swapchain.cppm" />
     <ClCompile Include="graphics\texture.cppm" />
     <ClCompile Include="graphics\window.cppm" />
@@ -186,6 +193,10 @@
   <ItemGroup>
     <ClInclude Include="graphics\platform\SDL.hpp" />
     <ClInclude Include="graphics\platform\vulkan.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fragment.frag" />
+    <None Include="vertex.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

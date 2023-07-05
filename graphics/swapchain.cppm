@@ -60,9 +60,9 @@ public:
         auto extent = GetSwapchainExtent(window, capabilities);
         presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vk::PresentModeKHR::eMailbox);
         surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Srgb, vk::ColorSpaceKHR::eSrgbNonlinear);
-        auto swapchainInfo = vk::SwapchainCreateInfoKHR(vk::SwapchainCreateFlagsKHR(), *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
+        auto swapchainInfo = vk::SwapchainCreateInfoKHR({}, *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
                                                         extent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
-                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode, VK_TRUE);
+                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode, true);
 
         swapchain = device.createSwapchainKHRUnique(swapchainInfo);
 
@@ -79,7 +79,7 @@ public:
 
     uint32_t AcquireNextImage() {
         currentFrame = (currentFrame + 1) % imageCount;
-        vk::Result waitForFencesResult = device.waitForFences(*acquireFences.at(currentFrame), VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vk::Result waitForFencesResult = device.waitForFences(*acquireFences.at(currentFrame), true, std::numeric_limits<uint64_t>::max());
         if(waitForFencesResult == vk::Result::eSuccess) {
             device.resetFences(*acquireFences.at(currentFrame));
             vk::ResultValue<uint32_t> acquireNextImageResultValue = device.acquireNextImageKHR(*swapchain, std::numeric_limits<uint64_t>::max(), *acquireSemaphores.at(currentFrame));
@@ -104,9 +104,9 @@ public:
         auto extent = GetSwapchainExtent(window, capabilities);
         presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vk::PresentModeKHR::eMailbox);
         surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear);
-        auto swapchainInfo = vk::SwapchainCreateInfoKHR(vk::SwapchainCreateFlagsKHR(), *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
+        auto swapchainInfo = vk::SwapchainCreateInfoKHR({}, *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
                                                         extent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
-                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode, VK_TRUE, *swapchain);
+                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode, true, *swapchain);
         swapchain = device.createSwapchainKHRUnique(swapchainInfo);
     }
 

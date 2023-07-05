@@ -38,7 +38,7 @@ public:
         CVulkanFunctionLoader::Load();
 
         auto applicationInfo = vk::ApplicationInfo("CVulkan", VK_MAKE_VERSION(1, 0, 0), "CVulkanRenderer", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_3);
-        auto instanceInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo, static_cast<uint32_t>(enabledLayers.size()), enabledLayers.data(), static_cast<uint32_t>(enabledExtensions.size()), enabledExtensions.data());
+        auto instanceInfo = vk::InstanceCreateInfo({}, &applicationInfo, static_cast<uint32_t>(enabledLayers.size()), enabledLayers.data(), static_cast<uint32_t>(enabledExtensions.size()), enabledExtensions.data());
 
         availableLayers = vk::enumerateInstanceLayerProperties();
         availableExtensions = vk::enumerateInstanceExtensionProperties();
