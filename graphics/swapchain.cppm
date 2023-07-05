@@ -1,6 +1,6 @@
 module;
 #include "platform/vulkan.hpp"
-#include "platform/sdl.hpp"
+#include "platform/SDL.hpp"
 export module swapchain;
 import <exception>;
 import <vector>;
@@ -28,11 +28,12 @@ export class CVulkanSwapchain {
     vk::PhysicalDevice physicalDevice;
     vk::Device device;
     vk::Queue queue;
+    SDL_Window* window;
     vk::UniqueSurfaceKHR surface;
     vk::SurfaceFormatKHR surfaceFormat;
     vk::SurfaceCapabilitiesKHR capabilities;
     std::vector<vk::SurfaceFormatKHR> formats;
-    std::vector<vk::PresentModeKHR> presentModes;
+    vk::PresentModeKHR presentMode;
     vk::UniqueSwapchainKHR swapchain;
     std::vector<vk::UniqueSemaphore> acquireSemaphores;
     std::vector<vk::UniqueFence> acquireFences;
@@ -44,7 +45,7 @@ public:
     CVulkanSwapchain() = default;
     // On Failure can throw a SwapchainCreationException.
     CVulkanSwapchain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, vk::Queue queue, SDL_Window* window, uint32_t imageCount) 
-            : physicalDevice(physicalDevice), device(device), queue(queue) {
+            : physicalDevice(physicalDevice), device(device), queue(queue), window(window), imageCount(imageCount), currentFrame(0), currentImage(0) {
         VkSurfaceKHR tmpSurface;
         if(!SDL_Vulkan_CreateSurface(window, instance, &tmpSurface)) {
             throw CVulkanSwapchainCreationException(EVulkanSwapchainCreationError::SURFACE_CREATION_FAILED);
@@ -56,11 +57,12 @@ public:
         }
 
         capabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
-        presentModes = physicalDevice.getSurfacePresentModesKHR(*surface);
-        surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Srgb);
+        auto extent = GetSwapchainExtent(window, capabilities);
+        presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vk::PresentModeKHR::eMailbox);
+        surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Srgb, vk::ColorSpaceKHR::eSrgbNonlinear);
         auto swapchainInfo = vk::SwapchainCreateInfoKHR(vk::SwapchainCreateFlagsKHR(), *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
-                                                        capabilities.currentExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
-                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, {}, VK_TRUE);
+                                                        extent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
+                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode, VK_TRUE);
 
         swapchain = device.createSwapchainKHRUnique(swapchainInfo);
 
@@ -85,21 +87,26 @@ public:
             if(acquireNextImageResult == vk::Result::eSuccess) {
                 currentImage = acquireNextImageResultValue.value;
             } else if(acquireNextImageResult == vk::Result::eErrorSurfaceLostKHR) {
-                printf("CVulkanSwapchain::AcquireNextImage: Lost Surface");
+                printf("CVulkanSwapchain::AcquireNextImage: Lost Surface\n");
             } else if(acquireNextImageResult == vk::Result::eErrorOutOfDateKHR) {
-                printf("CVulkanSwapchain::AcquireNextImage: Images are out of date");
+                printf("CVulkanSwapchain::AcquireNextImage: Images are out of date\n");
+                Recreate();
             }
+        } else if(waitForFencesResult == vk::Result::eTimeout) {
+            printf("CVulkanSwapchain::AcquireNextImage: Waiting for fence timed out.\n");
         }
         return currentImage;
     }
 
     void Recreate() {
+        device.waitIdle();
         capabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
-        presentModes = physicalDevice.getSurfacePresentModesKHR(*surface);
-        surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Srgb);
+        auto extent = GetSwapchainExtent(window, capabilities);
+        presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vk::PresentModeKHR::eMailbox);
+        surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear);
         auto swapchainInfo = vk::SwapchainCreateInfoKHR(vk::SwapchainCreateFlagsKHR(), *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
-                                                        capabilities.currentExtent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
-                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, {}, VK_TRUE, *swapchain);
+                                                        extent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
+                                                        vk::SurfaceTransformFlagBitsKHR::eIdentity, vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode, VK_TRUE, *swapchain);
         swapchain = device.createSwapchainKHRUnique(swapchainInfo);
     }
 
@@ -108,7 +115,10 @@ public:
     void Present(vk::Semaphore submitSemaphore) {
         auto presentInfo = vk::PresentInfoKHR(submitSemaphore, *swapchain, currentImage);
         vk::Result presentResult = queue.presentKHR(presentInfo);
-        if(presentResult != vk::Result::eSuccess) {
+        if(presentResult == vk::Result::eErrorOutOfDateKHR) {
+            printf("CVulkanSwapchain::Present: Swapchain is out of date.");
+            Recreate();
+        } else if(presentResult != vk::Result::eSuccess) {
             printf("CVulkanSwapchain::Present: Failed to present.");
         }
     }
@@ -141,8 +151,8 @@ public:
         return surfaceFormat;
     }
 
-    std::vector<vk::PresentModeKHR> GetVkPresentModes() {
-        return presentModes;
+    vk::PresentModeKHR GetVkPresentMode() {
+        return presentMode;
     }
 
     vk::Semaphore GetCurrentAcquireSemaphore() {
@@ -153,12 +163,42 @@ public:
         return *acquireFences.at(currentFrame);
     }
 private:
-    vk::SurfaceFormatKHR SelectSurfaceFormat(std::vector<vk::SurfaceFormatKHR> surfaceFormats, vk::Format preferred) {
+    vk::SurfaceFormatKHR SelectSurfaceFormat(std::vector<vk::SurfaceFormatKHR> surfaceFormats, vk::Format preferredFormat, vk::ColorSpaceKHR preferredColorSpace) {
         for(auto surfaceFormat : surfaceFormats) {
-            if(surfaceFormat.format == preferred) {
+            if(surfaceFormat.format == preferredFormat && surfaceFormat.colorSpace == preferredColorSpace) {
                 return surfaceFormat;
             }
         }
         return surfaceFormats.at(0);
+    }
+
+    vk::PresentModeKHR SelectPresentMode(std::vector<vk::PresentModeKHR> presentModes, vk::PresentModeKHR preferred) {
+        for(auto presentMode : presentModes) {
+            if(presentMode == preferred) {
+                return preferred;
+            }
+        }
+        return vk::PresentModeKHR::eFifo;
+    }
+
+    vk::Extent2D GetSwapchainExtent(SDL_Window* window, vk::SurfaceCapabilitiesKHR surfaceCapabilities) {
+        auto currentExtent = surfaceCapabilities.currentExtent;
+        // Use default extent we get from the surface, if it is not the max value(0xFFFFFFFF)
+        if(currentExtent.width != std::numeric_limits<uint32_t>::max() &&
+           currentExtent.height != std::numeric_limits<uint32_t>::max()) {
+            return currentExtent;
+        }
+
+        // If we get max values, create the extent to match the window size manually, then adjust based on the minimum extent supported if it is too small.
+        int width;
+        int height;
+        SDL_GetWindowSize(window, &width, &height);
+
+        vk::Extent2D extent = { static_cast<uint8_t>(width), static_cast<uint8_t>(height) };
+        auto minExtent = surfaceCapabilities.minImageExtent;
+        auto maxExtent = surfaceCapabilities.maxImageExtent;
+        extent.width = std::min(maxExtent.width, std::max(minExtent.width, extent.width));
+        extent.height = std::min(maxExtent.height, std::max(minExtent.height, extent.width));
+        return extent;
     }
 };

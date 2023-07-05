@@ -108,6 +108,10 @@
       <LanguageStandard_C>Default</LanguageStandard_C>
       <EnableModules>true</EnableModules>
       <CompileAs>Default</CompileAs>
+      <AdditionalModuleDependencies>%(AdditionalModuleDependencies)</AdditionalModuleDependencies>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+      <AdditionalBMIDirectories>
+      </AdditionalBMIDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -161,22 +165,26 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="graphics\buffer.cppm" />
+    <ClCompile Include="graphics\camera.cppm" />
     <ClCompile Include="graphics\cmd.cppm" />
     <ClCompile Include="graphics\debug.cppm" />
     <ClCompile Include="graphics\framebuffer.cppm" />
     <ClCompile Include="graphics\instance.cppm" />
     <ClCompile Include="graphics\loader.cppm" />
     <ClCompile Include="graphics\device.cppm" />
+    <ClCompile Include="graphics\mesh.cppm" />
+    <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\renderpass.cppm" />
     <ClCompile Include="graphics\queue.cppm" />
     <ClCompile Include="graphics\renderer.cppm" />
     <ClCompile Include="graphics\shader.cppm" />
     <ClCompile Include="graphics\swapchain.cppm" />
+    <ClCompile Include="graphics\texture.cppm" />
     <ClCompile Include="graphics\window.cppm" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="graphics\platform\sdl.hpp" />
+    <ClInclude Include="graphics\platform\SDL.hpp" />
     <ClInclude Include="graphics\platform\vulkan.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -186,6 +194,12 @@
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Bin
 $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <PublicModuleDirectories>
+    </PublicModuleDirectories>
+    <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
+    <PublicIncludeDirectories>$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Bin

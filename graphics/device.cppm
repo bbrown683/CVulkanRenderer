@@ -1,6 +1,7 @@
 module;
 #include "platform/vulkan.hpp"
 export module device;
+import <algorithm>;
 import loader;
 
 export class CVulkanDevice {
@@ -66,7 +67,22 @@ public:
         device = physicalDevice.createDeviceUnique(deviceInfo);
         CVulkanFunctionLoader::LoadDeviceFunctions(*device);
     }
-    
+
+    CVulkanDevice(const CVulkanDevice&) = default;
+    CVulkanDevice(CVulkanDevice&&) = default;
+    CVulkanDevice& operator=(const CVulkanDevice&) = default;
+    CVulkanDevice& operator=(CVulkanDevice&& device) = default;
+
+    ~CVulkanDevice() {
+        if(device) {
+            device->waitIdle(); // Wait for all operations to complete before shutting down.
+        }
+    }
+
+    vk::SampleCountFlags GetMaximumSupportedMultisamping() {
+        return std::min(limits.framebufferColorSampleCounts, limits.framebufferDepthSampleCounts);
+    }
+
     vk::Device GetVkDevice() {
         return *device;
     }

@@ -34,12 +34,16 @@
     <ClCompile Include="graphics\buffer.cppm" />
     <ClCompile Include="graphics\renderpass.cppm" />
     <ClCompile Include="graphics\framebuffer.cppm" />
+    <ClCompile Include="graphics\pipeline.cppm" />
+    <ClCompile Include="graphics\mesh.cppm" />
+    <ClCompile Include="graphics\texture.cppm" />
+    <ClCompile Include="graphics\camera.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\platform\vulkan.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\sdl.hpp">
+    <ClInclude Include="graphics\platform\SDL.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

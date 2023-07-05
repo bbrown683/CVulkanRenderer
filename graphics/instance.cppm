@@ -1,14 +1,12 @@
 module;
 #include "platform/vulkan.hpp"
-#include "platform/sdl.hpp"
+#include "platform/SDL.hpp"
 export module instance;
 import <vector>;
 #ifdef _DEBUG
 import debug;
 #endif
 import loader;
-
-export struct SDL_Window;
 
 export class CVulkanInstance {
     vk::UniqueInstance instance;
@@ -39,7 +37,7 @@ public:
 
         CVulkanFunctionLoader::Load();
 
-        auto applicationInfo = vk::ApplicationInfo("Halogen", VK_MAKE_VERSION(1, 0, 0), "Halogen Renderer", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_3);
+        auto applicationInfo = vk::ApplicationInfo("CVulkan", VK_MAKE_VERSION(1, 0, 0), "CVulkanRenderer", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_3);
         auto instanceInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo, static_cast<uint32_t>(enabledLayers.size()), enabledLayers.data(), static_cast<uint32_t>(enabledExtensions.size()), enabledExtensions.data());
 
         availableLayers = vk::enumerateInstanceLayerProperties();
@@ -70,6 +68,7 @@ public:
 #endif
         physicalDevices = instance->enumeratePhysicalDevices();
     }
+
     vk::Instance GetVkInstance() {
         return *instance;
     }

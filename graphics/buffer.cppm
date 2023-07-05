@@ -67,7 +67,8 @@ public:
             throw CVulkanBufferAllocatorCreationException(EBufferAllocatorCreationError::ALLOCATOR_CREATION_FAILED);
         }
     }
-    VmaAllocation CreateBuffer() {
+
+    VmaAllocation AllocateMemory() {
         // TODO: Fill these out.
         VmaAllocation allocation;
         vk::MemoryRequirements memoryRequirements;
@@ -81,7 +82,7 @@ public:
         return nullptr;
     }
 
-    void FreeBuffer(VmaAllocation allocation) {
+    void FreeMemory(VmaAllocation allocation) {
         vmaFreeMemory(allocator, allocation);
     }
 
@@ -102,6 +103,6 @@ public:
     }
 
     ~CVulkanBuffer() {
-
+        vmaFreeMemory(*allocator, allocation);
     }
 };

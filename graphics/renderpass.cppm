@@ -41,3 +41,25 @@ public:
         return clearColor;
     }
 };
+
+/*
+/// Returns the optimal depth-stencil format, if one exists. Returns `Some(vk::Format)` when a format exists, and None if
+/// there are no supported depth-stencil formats.
+pub fn select_depth_stencil_format(instance : ash::Instance,
+                                   physical_device : vk::PhysicalDevice,
+                                   preferred : vk::Format) -> Option<vk::Format> {
+    let depth_stencil_formats = vec![vk::Format::D32_SFLOAT_S8_UINT,
+                                     vk::Format::D32_SFLOAT,
+                                     vk::Format::D24_UNORM_S8_UINT,
+                                     vk::Format::D16_UNORM_S8_UINT,
+                                     vk::Format::D16_UNORM];
+    for format in depth_stencil_formats {
+        let properties = unsafe { instance.get_physical_device_format_properties(physical_device, format) };
+        if properties.optimal_tiling_features & vk::FormatFeatureFlags::DEPTH_STENCIL_ATTACHMENT ==
+            vk::FormatFeatureFlags::DEPTH_STENCIL_ATTACHMENT  {
+            return Some(format);
+        }
+    }
+    None
+}
+*/
