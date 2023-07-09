@@ -9,7 +9,7 @@ export class CVulkanCommandPool {
 public:
     CVulkanCommandPool() = default;
     CVulkanCommandPool(vk::Device device, uint8_t queueFamilyIndex) : device(device) {
-        commandPool = device.createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, queueFamilyIndex));
+        commandPool = device.createCommandPoolUnique(vk::CommandPoolCreateInfo({}, queueFamilyIndex));
     }
 
     void Reset() {
@@ -25,11 +25,11 @@ export class CVulkanCommandBuffer {
     vk::Device device;
     vk::UniqueCommandBuffer commandBuffer;
     bool active;
-    bool activeRenderPass;
+    bool rendering;
 public:
     CVulkanCommandBuffer() = default;
-    CVulkanCommandBuffer(vk::Device device, vk::CommandPool commandPool) : device(device) {
-        auto commandBufferInfo = vk::CommandBufferAllocateInfo(commandPool, vk::CommandBufferLevel::ePrimary, 1);
+    CVulkanCommandBuffer(vk::Device device, vk::CommandPool commandPool, vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary) : device(device) {
+        auto commandBufferInfo = vk::CommandBufferAllocateInfo(commandPool, level, 1);
         commandBuffer = std::move(device.allocateCommandBuffersUnique(commandBufferInfo).front());
     }
 
@@ -45,36 +45,35 @@ public:
         End();
     }
 
-    void BeginRenderPass(vk::RenderPass renderPass, vk::Framebuffer framebuffer, vk::Extent2D extent, vk::ClearColorValue clearColor) {
-        Begin();
-
-        auto clearValue = vk::ClearValue(clearColor);
-
-        activeRenderPass = true;
-        commandBuffer->beginRenderPass(vk::RenderPassBeginInfo(renderPass, framebuffer, vk::Rect2D({ 0, 0 }, extent), clearValue), vk::SubpassContents::eInline);
+    void ExecuteCommandBuffers(std::vector<vk::CommandBuffer> commandBuffers) {
+        commandBuffer->executeCommands(commandBuffers);
     }
 
-    void EndRenderPass(vk::RenderPass renderPass, vk::Framebuffer framebuffer, vk::Extent2D extent, vk::ClearColorValue clearColor) {
-        activeRenderPass = false;
-        commandBuffer->endRenderPass();
+    void BeginRender(vk::Rect2D renderArea, std::vector<vk::RenderingAttachmentInfo> colorAttachments, std::vector<vk::RenderingAttachmentInfo> depthAttachments = {}, std::vector<vk::RenderingAttachmentInfo> stencilAttachments = {}) {
+        Begin();
+        rendering = true;
+        auto renderingInfo = vk::RenderingInfo({}, renderArea, 0, 0, colorAttachments, depthAttachments.data(), stencilAttachments.data());
+        commandBuffer->beginRendering(renderingInfo);
+    }
 
+    void EndRender() {
+        commandBuffer->endRendering();
         End();
+        rendering = false;
     }
 
     // TODO: Support indexed draws.
     void Draw(vk::Pipeline pipeline, vk::PipelineBindPoint bindPoint, uint32_t vertices) {
-        if(active && activeRenderPass) {
+        if(active && rendering) {
             commandBuffer->draw(vertices, 1, 0, 0);
         } else {
-            printf("CVulkanCommandBuffer::Draw: Called outside of CommmandBuffer execution.");
+            printf("CVulkanCommandBuffer::Draw: Called outside of CommmandBuffer execution");
         }
     }
 
 private:
     void Begin() {
         device.waitIdle();
-        commandBuffer->reset();
-
         active = true;
         commandBuffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
     }

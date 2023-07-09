@@ -8,16 +8,12 @@ export module pipeline;
 // Vertex Properties.
 export struct CVulkanVertex {
     glm::fvec4 position;
-    glm::fvec3 normal;
-    glm::fvec2 textureCoordinates;
     glm::fvec4 color;
 
     static std::vector<vk::VertexInputAttributeDescription> GetVkVertexInputAttributeDescriptions() {
         return { 
             vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(CVulkanVertex, position)),
-            vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(CVulkanVertex, normal)),
-            vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(CVulkanVertex, textureCoordinates)),
-            vk::VertexInputAttributeDescription(3, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(CVulkanVertex, color)),
+            vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(CVulkanVertex, color)),
         };
     }
 
@@ -41,13 +37,15 @@ export struct CVulkanPushConstants {
 export class CVulkanGraphicsPipeline {
     vk::UniquePipeline pipeline;
     vk::UniquePipelineLayout layout;
+    vk::UniqueDescriptorSet descriptorSet;
+    vk::UniqueDescriptorSetLayout descriptorSetLayout;
     vk::UniqueShaderModule vertexShaderModule;
     vk::UniqueShaderModule fragmentShaderModule;
     std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
     std::vector<vk::VertexInputBindingDescription> bindingDescriptions;
 public:
     CVulkanGraphicsPipeline() = default;
-    CVulkanGraphicsPipeline(vk::Device device, vk::RenderPass renderPass, std::string vertexShaderFile, std::string fragmentShaderFile, vk::Extent2D extent) {
+    CVulkanGraphicsPipeline(vk::Device device, std::string vertexShaderFile, std::string fragmentShaderFile) {
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesInfo;
 
         // Vertex Shader
@@ -73,19 +71,24 @@ public:
         shaderStagesInfo.push_back(vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eFragment, *fragmentShaderModule, "main"));
 
         auto inputAssemblyStateInfo = vk::PipelineInputAssemblyStateCreateInfo({}, vk::PrimitiveTopology::eTriangleList);
-
-        auto viewport = vk::Viewport(0.0f, 0.0f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.0f, 1.0f);
-        auto scissor = vk::Rect2D({ 0, 0 }, extent);
-        auto viewportStateInfo = vk::PipelineViewportStateCreateInfo({}, viewport, scissor);
+        auto viewportStateInfo = vk::PipelineViewportStateCreateInfo({});
 
         auto rasterizationStateInfo = vk::PipelineRasterizationStateCreateInfo({}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone, vk::FrontFace::eCounterClockwise, false, 0.0f, 0.0f, 0.0f, 1.0f);
         auto multisampleStateInfo = vk::PipelineMultisampleStateCreateInfo({}, vk::SampleCountFlagBits::e1);
         auto colorBlendStateInfo = vk::PipelineColorBlendStateCreateInfo({});
 
-        auto layoutInfo = vk::PipelineLayoutCreateInfo({});
+        // These will be modified via command buffers dynamically instead.
+        auto dynamicStates = { vk::DynamicState::eViewportWithCount, vk::DynamicState::eScissorWithCount, vk::DynamicState::eCullMode, vk::DynamicState::eFrontFace, vk::DynamicState::ePrimitiveTopology };
+        auto dynamicStateInfo = vk::PipelineDynamicStateCreateInfo({}, dynamicStates);
+
+        auto descriptorSetLayoutInfo = vk::DescriptorSetLayoutCreateInfo({});
+        descriptorSetLayout = device.createDescriptorSetLayoutUnique(descriptorSetLayoutInfo);
+
+        auto pushConstantRange = vk::PushConstantRange(vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4));
+        auto layoutInfo = vk::PipelineLayoutCreateInfo({}, *descriptorSetLayout, pushConstantRange);
         layout = device.createPipelineLayoutUnique(layoutInfo);
 
-        auto pipelineInfo = vk::GraphicsPipelineCreateInfo({}, shaderStagesInfo, &vertexInputStateInfo, &inputAssemblyStateInfo, nullptr, &viewportStateInfo, &rasterizationStateInfo, &multisampleStateInfo, nullptr, &colorBlendStateInfo, nullptr, *layout, renderPass);
+        auto pipelineInfo = vk::GraphicsPipelineCreateInfo({}, shaderStagesInfo, &vertexInputStateInfo, &inputAssemblyStateInfo, nullptr, &viewportStateInfo, &rasterizationStateInfo, &multisampleStateInfo, nullptr, &colorBlendStateInfo, &dynamicStateInfo, *layout, nullptr);
         vk::ResultValue<vk::UniquePipeline> createGraphicsPipelineResultValue = device.createGraphicsPipelineUnique(nullptr, pipelineInfo);
         vk::Result createGraphicsPipelineResult = createGraphicsPipelineResultValue.result;
         if(createGraphicsPipelineResult == vk::Result::eSuccess) {

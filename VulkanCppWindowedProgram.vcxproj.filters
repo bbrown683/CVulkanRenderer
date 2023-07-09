@@ -32,8 +32,6 @@
     </ClCompile>
     <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\buffer.cppm" />
-    <ClCompile Include="graphics\renderpass.cppm" />
-    <ClCompile Include="graphics\framebuffer.cppm" />
     <ClCompile Include="graphics\mesh.cppm" />
     <ClCompile Include="graphics\texture.cppm" />
     <ClCompile Include="graphics\camera.cppm" />

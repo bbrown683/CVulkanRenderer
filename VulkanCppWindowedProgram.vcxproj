@@ -125,8 +125,8 @@
       </Command>
     </PostBuildEvent>
     <CustomBuildStep>
-      <Command>glslc.exe -c --target-env=vulkan vertex.vert -o vertex.spv
-glslc.exe -c --target-env=vulkan fragment.frag -o fragment.spv</Command>
+      <Command>
+      </Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -176,12 +176,10 @@ glslc.exe -c --target-env=vulkan fragment.frag -o fragment.spv</Command>
     <ClCompile Include="graphics\camera.cppm" />
     <ClCompile Include="graphics\cmd.cppm" />
     <ClCompile Include="graphics\debug.cppm" />
-    <ClCompile Include="graphics\framebuffer.cppm" />
     <ClCompile Include="graphics\instance.cppm" />
     <ClCompile Include="graphics\loader.cppm" />
     <ClCompile Include="graphics\device.cppm" />
     <ClCompile Include="graphics\mesh.cppm" />
-    <ClCompile Include="graphics\renderpass.cppm" />
     <ClCompile Include="graphics\queue.cppm" />
     <ClCompile Include="graphics\renderer.cppm" />
     <ClCompile Include="graphics\pipeline.cppm" />

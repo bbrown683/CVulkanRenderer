@@ -7,11 +7,13 @@ import instance;
 import device;
 import queue;
 import swapchain;
-import renderpass;
 import buffer;
-import framebuffer;
 import cmd;
 import pipeline;
+
+export struct CVulkanRendererProperties {
+    bool vsync;
+};
 
 export class CVulkanRenderer {
     CVulkanInstance instance;
@@ -20,8 +22,6 @@ export class CVulkanRenderer {
     CVulkanQueue computeQueue;
     CVulkanQueue transferQueue;
     CVulkanSwapchain swapchain;
-    CVulkanRenderPass renderPass;
-    std::vector<CVulkanFramebuffer> framebuffers;
     CVulkanBufferAllocator bufferAllocator;
     CVulkanCommandPool commandPool;
     CVulkanCommandBuffer commandBuffer;
@@ -42,26 +42,17 @@ public:
         computeQueue = CVulkanQueue(vkDevice, device.GetComputeQueueIndex());
         transferQueue = CVulkanQueue(vkDevice, device.GetTransferQueueIndex());
         
-        swapchain = CVulkanSwapchain(vkInstance, vkPhysicalDevice, vkDevice, graphicsQueue.GetVkQueue(), window, 2);
+        swapchain = CVulkanSwapchain(vkInstance, vkPhysicalDevice, vkDevice, graphicsQueue.GetVkQueue(), window, 2, true);
         auto vkImages = swapchain.GetVkImages();
         auto surfaceFormat = swapchain.GetVkSurfaceFormat().format;
         auto surfaceExtent = swapchain.GetVkSurfaceCapabilities().currentExtent;
-
-        renderPass = CVulkanRenderPass(vkDevice, swapchain.GetVkSurfaceFormat().format);
-        auto vkRenderPass = renderPass.GetVkRenderPass();
-
-        for(auto& vkImage : vkImages) {
-            framebuffers.push_back(CVulkanFramebuffer(vkDevice, vkRenderPass, vkImage, surfaceFormat, surfaceExtent));
-        }
-
         bufferAllocator = CVulkanBufferAllocator(vkInstance, vkPhysicalDevice, vkDevice);
 
         commandPool = CVulkanCommandPool(vkDevice, graphicsQueue.GetFamilyIndex());
         auto vkCommandPool = commandPool.GetVkCommandPool();
 
         commandBuffer = CVulkanCommandBuffer(vkDevice, vkCommandPool);
-
-        pipeline = CVulkanGraphicsPipeline(vkDevice, vkRenderPass, "vertex.spv", "fragment.spv", surfaceExtent);
+        pipeline = CVulkanGraphicsPipeline(vkDevice, "vertex.spv", "fragment.spv");
     }
 
     CVulkanRenderer(const CVulkanRenderer&) = default;

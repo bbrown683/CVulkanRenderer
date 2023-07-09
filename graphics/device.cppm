@@ -57,13 +57,24 @@ public:
         auto computeInfo = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), computeQueueIndex, priorities);
         auto transferInfo = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), transferQueueIndex, priorities);
 
-        auto physicalDeviceFeatures = vk::PhysicalDeviceFeatures()
+        std::vector<vk::PhysicalDeviceFeatures> features;
+        auto defaultPhysicalDeviceFeatures = vk::PhysicalDeviceFeatures()
             .setFillModeNonSolid(true)
             .setSamplerAnisotropy(true);
 
+        // Enable Dynamic Rendering features.
+        /*
+        auto extendedDynamicState3PhysicalDeviceFeatures = vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT()
+            .setExtendedDynamicState3PolygonMode(true)
+            .setExtendedDynamicState3RasterizationSamples(true);
+        */
+        auto enableExtendedDynamicStatePhysicalDeviceFeatures = vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT(true);
+        auto dynamicRenderingPhysicalDeviceFeatures = vk::PhysicalDeviceDynamicRenderingFeaturesKHR(true);
+        auto deviceFeatures = vk::PhysicalDeviceFeatures2(defaultPhysicalDeviceFeatures, &dynamicRenderingPhysicalDeviceFeatures);
+
         std::vector<vk::DeviceQueueCreateInfo> queueInfos = { graphicsInfo, computeInfo, transferInfo };
         std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-        auto deviceInfo = vk::DeviceCreateInfo({}, queueInfos, nullptr, deviceExtensions, &physicalDeviceFeatures);
+        auto deviceInfo = vk::DeviceCreateInfo({}, queueInfos, nullptr, deviceExtensions, nullptr, &deviceFeatures);
         device = physicalDevice.createDeviceUnique(deviceInfo);
         CVulkanFunctionLoader::LoadDeviceFunctions(*device);
     }

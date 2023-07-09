@@ -41,11 +41,12 @@ export class CVulkanSwapchain {
     uint32_t imageCount;
     uint32_t currentFrame;
     uint32_t currentImage;
+    bool vsync;
 public:
     CVulkanSwapchain() = default;
     // On Failure can throw a SwapchainCreationException.
-    CVulkanSwapchain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, vk::Queue queue, SDL_Window* window, uint32_t imageCount) 
-            : physicalDevice(physicalDevice), device(device), queue(queue), window(window), imageCount(imageCount), currentFrame(0), currentImage(0) {
+    CVulkanSwapchain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, vk::Queue queue, SDL_Window* window, uint32_t imageCount, bool vsync) 
+            : physicalDevice(physicalDevice), device(device), queue(queue), window(window), imageCount(imageCount), vsync(vsync), currentFrame(0), currentImage(0) {
         VkSurfaceKHR tmpSurface;
         if(!SDL_Vulkan_CreateSurface(window, instance, &tmpSurface)) {
             throw CVulkanSwapchainCreationException(EVulkanSwapchainCreationError::SURFACE_CREATION_FAILED);
@@ -58,7 +59,7 @@ public:
 
         capabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
         auto extent = GetSwapchainExtent(window, capabilities);
-        presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vk::PresentModeKHR::eMailbox);
+        presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vsync ? vk::PresentModeKHR::eImmediate : vk::PresentModeKHR::eMailbox);
         surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Srgb, vk::ColorSpaceKHR::eSrgbNonlinear);
         auto swapchainInfo = vk::SwapchainCreateInfoKHR({}, *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
                                                         extent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
@@ -88,8 +89,8 @@ public:
                 currentImage = acquireNextImageResultValue.value;
             } else if(acquireNextImageResult == vk::Result::eErrorSurfaceLostKHR) {
                 printf("CVulkanSwapchain::AcquireNextImage: Lost Surface\n");
-            } else if(acquireNextImageResult == vk::Result::eErrorOutOfDateKHR) {
-                printf("CVulkanSwapchain::AcquireNextImage: Images are out of date\n");
+            } else if(acquireNextImageResult == vk::Result::eErrorOutOfDateKHR || acquireNextImageResult == vk::Result::eSuboptimalKHR) {
+                printf("CVulkanSwapchain::AcquireNextImage: Swapchain needs recreation\n");
                 Recreate();
             }
         } else if(waitForFencesResult == vk::Result::eTimeout) {
@@ -102,7 +103,7 @@ public:
         device.waitIdle();
         capabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
         auto extent = GetSwapchainExtent(window, capabilities);
-        presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vk::PresentModeKHR::eMailbox);
+        presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vsync ? vk::PresentModeKHR::eImmediate : vk::PresentModeKHR::eMailbox);
         surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear);
         auto swapchainInfo = vk::SwapchainCreateInfoKHR({}, *surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace,
                                                         extent, 1, vk::ImageUsageFlagBits::eColorAttachment, {}, nullptr,
@@ -115,11 +116,11 @@ public:
     void Present(vk::Semaphore submitSemaphore) {
         auto presentInfo = vk::PresentInfoKHR(submitSemaphore, *swapchain, currentImage);
         vk::Result presentResult = queue.presentKHR(presentInfo);
-        if(presentResult == vk::Result::eErrorOutOfDateKHR) {
-            printf("CVulkanSwapchain::Present: Swapchain is out of date.");
+        if(presentResult == vk::Result::eErrorOutOfDateKHR || presentResult == vk::Result::eSuboptimalKHR) {
+            printf("CVulkanSwapchain::Present: Swapchain needs recreation");
             Recreate();
         } else if(presentResult != vk::Result::eSuccess) {
-            printf("CVulkanSwapchain::Present: Failed to present.");
+            printf("CVulkanSwapchain::Present: Failed to present");
         }
     }
 
