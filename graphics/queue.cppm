@@ -1,27 +1,21 @@
 module;
 #include "platform/vulkan.hpp"
 export module queue;
+import device;
 
 export class CVulkanQueue {
-    vk::Device device;
+    std::shared_ptr<CVulkanDevice> device;
     vk::Queue queue;
     uint32_t familyIndex;
     std::vector<vk::UniqueSemaphore> submitSemaphores;
 public:
     CVulkanQueue() = default;
-    CVulkanQueue(vk::Device device, uint32_t familyIndex) : device(device), familyIndex(familyIndex) {
-        queue = device.getQueue(familyIndex, 0);
+    CVulkanQueue(std::shared_ptr<CVulkanDevice> device, uint32_t familyIndex) : device(device), familyIndex(familyIndex) {
+        queue = device->GetVkDevice().getQueue(familyIndex, 0);
     }
 
-    CVulkanQueue(const CVulkanQueue&) = default;
-    CVulkanQueue(CVulkanQueue&&) = default;
-    CVulkanQueue& operator=(const CVulkanQueue&) = default;
-    CVulkanQueue& operator=(CVulkanQueue&& device) = default;
-
     ~CVulkanQueue() {
-        if(queue) {
-            queue.waitIdle();
-        }
+        queue.waitIdle();
     }
 
     void Submit(vk::CommandBuffer commandBuffer, vk::Semaphore submitSemaphore = nullptr, vk::Semaphore waitSemaphore = nullptr, vk::PipelineStageFlags waitSemaphoreFlags = {}, vk::Fence signalFence = nullptr) {
@@ -37,9 +31,9 @@ public:
         if(signalFence) {
             queue.submit(submitInfo, signalFence);
         } else { // If we do not have a fence already, create one and wait for it to be signalled.
-            auto fence = device.createFenceUnique({});
+            auto fence = device->GetVkDevice().createFenceUnique({});
             queue.submit(submitInfo, *fence);
-            vk::Result waitForFencesResult = device.waitForFences(*fence, true, std::numeric_limits<uint64_t>::max());
+            vk::Result waitForFencesResult = device->GetVkDevice().waitForFences(*fence, true, std::numeric_limits<uint64_t>::max());
             if(waitForFencesResult != vk::Result::eSuccess) {
                 printf("CVulkanQueue::Submit: Failed to wait for fence");
             }

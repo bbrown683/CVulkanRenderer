@@ -176,6 +176,10 @@ public:
     vk::ImageView GetCurrentImageView() {
         return *imageViews[currentImage];
     }
+
+    uint8_t GetImageCount() {
+        return imageCount;
+    }
 private:
     void createSwapchain() {
         capabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);

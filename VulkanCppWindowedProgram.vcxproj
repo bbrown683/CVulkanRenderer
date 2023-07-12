@@ -175,10 +175,18 @@
     <ClCompile Include="graphics\buffer.cppm" />
     <ClCompile Include="graphics\camera.cppm" />
     <ClCompile Include="graphics\cmd.cppm" />
+    <ClCompile Include="graphics\ui.cppm" />
     <ClCompile Include="graphics\instance.cppm" />
     <ClCompile Include="graphics\loader.cppm" />
     <ClCompile Include="graphics\device.cppm" />
     <ClCompile Include="graphics\mesh.cppm" />
+    <ClCompile Include="graphics\platform\imgui\imgui.cpp" />
+    <ClCompile Include="graphics\platform\imgui\imgui_demo.cpp" />
+    <ClCompile Include="graphics\platform\imgui\imgui_draw.cpp" />
+    <ClCompile Include="graphics\platform\imgui\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="graphics\platform\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="graphics\platform\imgui\imgui_tables.cpp" />
+    <ClCompile Include="graphics\platform\imgui\imgui_widgets.cpp" />
     <ClCompile Include="graphics\queue.cppm" />
     <ClCompile Include="graphics\renderer.cppm" />
     <ClCompile Include="graphics\pipeline.cppm" />
@@ -188,7 +196,16 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graphics\platform\imgui\imconfig.h" />
+    <ClInclude Include="graphics\platform\imgui\imgui.h" />
+    <ClInclude Include="graphics\platform\imgui\imgui_impl_sdl2.h" />
+    <ClInclude Include="graphics\platform\imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="graphics\platform\imgui\imgui_internal.h" />
+    <ClInclude Include="graphics\platform\imgui\imstb_rectpack.h" />
+    <ClInclude Include="graphics\platform\imgui\imstb_textedit.h" />
+    <ClInclude Include="graphics\platform\imgui\imstb_truetype.h" />
     <ClInclude Include="graphics\platform\SDL.hpp" />
+    <ClInclude Include="graphics\platform\stb_image.h" />
     <ClInclude Include="graphics\platform\vulkan.hpp" />
   </ItemGroup>
   <ItemGroup>

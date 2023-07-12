@@ -53,9 +53,9 @@ public:
         }
 
         std::vector<float> priorities = { 1.0f };
-        vk::DeviceQueueCreateInfo graphicsInfo(vk::DeviceQueueCreateFlags(), graphicsQueueIndex, priorities);
-        vk::DeviceQueueCreateInfo computeInfo(vk::DeviceQueueCreateFlags(), computeQueueIndex, priorities);
-        vk::DeviceQueueCreateInfo transferInfo(vk::DeviceQueueCreateFlags(), transferQueueIndex, priorities);
+        vk::DeviceQueueCreateInfo graphicsInfo({}, graphicsQueueIndex, priorities);
+        vk::DeviceQueueCreateInfo computeInfo({}, computeQueueIndex, priorities);
+        vk::DeviceQueueCreateInfo transferInfo({}, transferQueueIndex, priorities);
 
         vk::PhysicalDeviceFeatures defaultPhysicalDeviceFeatures;
         defaultPhysicalDeviceFeatures.setFillModeNonSolid(true);
@@ -66,21 +66,18 @@ public:
         vk::PhysicalDeviceFeatures2 deviceFeatures(defaultPhysicalDeviceFeatures, &dynamicRenderingFeatures);
 
         std::vector<vk::DeviceQueueCreateInfo> queueInfos = { graphicsInfo, computeInfo, transferInfo };
-        std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+        std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME };
         vk::DeviceCreateInfo deviceInfo({}, queueInfos, nullptr, deviceExtensions, nullptr, &deviceFeatures);
         device = physicalDevice.createDeviceUnique(deviceInfo);
         CVulkanFunctionLoader::LoadDeviceFunctions(*device);
     }
 
-    CVulkanDevice(const CVulkanDevice&) = default;
-    CVulkanDevice(CVulkanDevice&&) = default;
-    CVulkanDevice& operator=(const CVulkanDevice&) = default;
-    CVulkanDevice& operator=(CVulkanDevice&& device) = default;
-
     ~CVulkanDevice() {
-        if(*device) {
-            device->waitIdle(); // Wait for all operations to complete before shutting down.
-        }
+        device->waitIdle(); // Wait for all operations to complete before shutting down.
+    }
+
+    vk::Device operator*() const {
+        return *device;
     }
 
     vk::SampleCountFlags GetMaximumSupportedMultisamping() {

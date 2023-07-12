@@ -1,5 +1,7 @@
 module;
 #include "platform/SDL.hpp"
+#include "platform/imgui/imgui.h"
+#include "platform/imgui/imgui_impl_sdl2.h"
 export module window;
 import <vector>;
 
@@ -12,7 +14,13 @@ public:
         if(SDL_Init(SDL_INIT_VIDEO) != 0) {
             printf("Failed to initialize SDL!");
         }
-        window = SDL_CreateWindow("Vulkan Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
+
+        // From 2.0.18: Enable native IME.
+#ifdef SDL_HINT_IME_SHOW_UI
+        SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+#endif
+
+        window = SDL_CreateWindow("Vulkan Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
         if(window == nullptr) {
             printf("Failed to initialize SDL!");
         }
@@ -38,6 +46,7 @@ public:
     void PollEvents() {
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
             if(event.type == SDL_QUIT) {
                 running = false;
                 break;

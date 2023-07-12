@@ -37,8 +37,6 @@ export class CVulkanGraphicsPipeline {
     vk::UniquePipelineLayout layout;
     vk::UniqueDescriptorSet descriptorSet;
     vk::UniqueDescriptorSetLayout descriptorSetLayout;
-    std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
-    std::vector<vk::VertexInputBindingDescription> bindingDescriptions;
 public:
     CVulkanGraphicsPipeline() = default;
     CVulkanGraphicsPipeline(vk::Device device, std::string vertexShaderFile, std::string fragmentShaderFile, vk::Format colorFormat) {
@@ -101,7 +99,7 @@ public:
 
         // These will be modified via command buffers dynamically instead.
         auto dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
-        auto dynamicStateInfo = vk::PipelineDynamicStateCreateInfo({}, dynamicStates);
+        vk::PipelineDynamicStateCreateInfo dynamicStateInfo({}, dynamicStates);
 
         /*
         auto descriptorSetLayoutInfo = vk::DescriptorSetLayoutCreateInfo({});

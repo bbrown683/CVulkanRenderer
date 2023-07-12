@@ -11,6 +11,7 @@ import swapchain;
 import buffer;
 import cmd;
 import pipeline;
+import ui;
 
 export struct CVulkanRendererProperties {
     bool vsync;
@@ -28,78 +29,82 @@ std::vector<uint16_t> indices = {
 };
 
 export class CVulkanRenderer {
-    CVulkanInstance instance;
-    CVulkanDevice device;
-    CVulkanSwapchain swapchain;
-    CVulkanCommandPool graphicsCommandPool;
-    CVulkanCommandPool transferCommandPool;
-    std::vector<CVulkanCommandBuffer> graphicsCommandBuffers;
-    CVulkanGraphicsPipeline pipeline;
-    CVulkanBuffer vertexBuffer;
-    CVulkanBuffer indexBuffer;
+    std::shared_ptr<CVulkanInstance> instance;
+    std::shared_ptr<CVulkanDevice> device;
+    std::unique_ptr<CVulkanSwapchain> swapchain;
+    std::unique_ptr<CVulkanCommandPool> graphicsCommandPool;
+    std::unique_ptr<CVulkanCommandPool> transferCommandPool;
+    std::vector<std::shared_ptr<CVulkanCommandBuffer>> graphicsCommandBuffers;
+    std::unique_ptr<CVulkanGraphicsPipeline> pipeline;
+    std::unique_ptr<CVulkanBuffer> vertexBuffer;
+    std::unique_ptr<CVulkanBuffer> indexBuffer;
+    std::unique_ptr<CVulkanUi> ui;
 
     // Let these get destroyed first, so any pending submissions complete.
-    CVulkanQueue graphicsQueue;
-    CVulkanQueue computeQueue;
-    CVulkanQueue transferQueue;
+    std::shared_ptr<CVulkanQueue> graphicsQueue;
+    std::shared_ptr<CVulkanQueue> computeQueue;
+    std::shared_ptr<CVulkanQueue> transferQueue;
 public:
     CVulkanRenderer(SDL_Window* window) {
-        instance = CVulkanInstance(window);
-        auto vkInstance = instance.GetVkInstance();
-        auto vkPhysicalDevices = instance.GetVkPhysicalDevices();
+        instance = std::make_shared<CVulkanInstance>(window);
+        auto vkInstance = instance->GetVkInstance();
+        auto vkPhysicalDevices = instance->GetVkPhysicalDevices();
         auto vkPhysicalDevice = SelectPrimaryPhysicalDevice(vkPhysicalDevices);
-        device = CVulkanDevice(vkPhysicalDevice);
-        auto vkDevice = device.GetVkDevice();
+        device = std::make_shared<CVulkanDevice>(vkPhysicalDevice);
+        auto vkDevice = device->GetVkDevice();
 
-        graphicsQueue = CVulkanQueue(vkDevice, device.GetGraphicsQueueIndex());
-        computeQueue = CVulkanQueue(vkDevice, device.GetComputeQueueIndex());
-        transferQueue = CVulkanQueue(vkDevice, device.GetTransferQueueIndex());
+        graphicsQueue = std::make_shared<CVulkanQueue>(device, device->GetGraphicsQueueIndex());
+        computeQueue = std::make_shared<CVulkanQueue>(device, device->GetComputeQueueIndex());
+        transferQueue = std::make_shared<CVulkanQueue>(device, device->GetTransferQueueIndex());
 
-        int imageCount = 2;
-        swapchain = CVulkanSwapchain(vkInstance, vkPhysicalDevice, vkDevice, graphicsQueue.GetVkQueue(), window, imageCount, true);
+        swapchain = std::make_unique<CVulkanSwapchain>(instance->GetVkInstance(), vkPhysicalDevice, vkDevice, graphicsQueue->GetVkQueue(), window, 2, true);
 
-        graphicsCommandPool = CVulkanCommandPool(vkDevice, graphicsQueue.GetFamilyIndex());
-        auto vkGraphicsCommandPool = graphicsCommandPool.GetVkCommandPool();
+        graphicsCommandPool = std::make_unique<CVulkanCommandPool>(vkDevice, graphicsQueue->GetFamilyIndex());
+        auto vkGraphicsCommandPool = graphicsCommandPool->GetVkCommandPool();
 
-        transferCommandPool = CVulkanCommandPool(vkDevice, transferQueue.GetFamilyIndex(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-        auto vkTransferCommandPool = transferCommandPool.GetVkCommandPool();
+        transferCommandPool = std::make_unique<CVulkanCommandPool>(vkDevice, transferQueue->GetFamilyIndex(), vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+        auto vkTransferCommandPool = transferCommandPool->GetVkCommandPool();
  
-        for(int i = 0; i < imageCount; i++) {
-            graphicsCommandBuffers.push_back(CVulkanCommandBuffer(vkDevice, vkGraphicsCommandPool));
+        for(int i = 0; i < swapchain->GetImageCount(); i++) {
+            graphicsCommandBuffers.push_back(std::make_shared<CVulkanCommandBuffer>(vkDevice, vkGraphicsCommandPool));
         }
 
-        CVulkanCommandBuffer transferCommandBuffer = CVulkanCommandBuffer(vkDevice, vkTransferCommandPool);
+        CVulkanCommandBuffer transferCommandBuffer(vkDevice, vkTransferCommandPool);
 
-        auto surfaceFormat = swapchain.GetVkSurfaceFormat();
-        auto surfaceCapabilities = swapchain.GetVkSurfaceCapabilities();
-        pipeline = CVulkanGraphicsPipeline(vkDevice, "vertex.spv", "fragment.spv", surfaceFormat.format);
+        auto surfaceFormat = swapchain->GetVkSurfaceFormat();
+        auto surfaceCapabilities = swapchain->GetVkSurfaceCapabilities();
+        pipeline = std::make_unique<CVulkanGraphicsPipeline>(vkDevice, "vertex.spv", "fragment.spv", surfaceFormat.format);
+
+        auto memoryProperties = device->GetVkPhysicalDeviceMemoryProperties();
 
         // Vertex Buffer
         vk::DeviceSize vertexBufferSize = sizeof(CVulkanVertex) * vertices.size();
-        CVulkanBuffer stagingVertexBuffer(vkDevice, device.GetVkPhysicalDeviceMemoryProperties(), vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vk::BufferUsageFlagBits::eTransferSrc, vertices.data(), vertexBufferSize);
-        vertexBuffer = CVulkanBuffer(vkDevice, device.GetVkPhysicalDeviceMemoryProperties(), vk::MemoryPropertyFlagBits::eDeviceLocal, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, nullptr, vertexBufferSize);
+        CVulkanBuffer stagingVertexBuffer(vkDevice, memoryProperties, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vk::BufferUsageFlagBits::eTransferSrc, vertices.data(), vertexBufferSize);
+        vertexBuffer = std::make_unique<CVulkanBuffer>(vkDevice, memoryProperties, vk::MemoryPropertyFlagBits::eDeviceLocal, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, nullptr, vertexBufferSize);
         
-        transferCommandBuffer.CopyBuffer(stagingVertexBuffer.GetVkBuffer(), vertexBuffer.GetVkBuffer(), vk::BufferCopy(0, 0, vertexBufferSize));
-        transferQueue.Submit(transferCommandBuffer.GetVkCommandBuffer());
+        transferCommandBuffer.CopyBuffer(stagingVertexBuffer.GetVkBuffer(), vertexBuffer->GetVkBuffer(), vk::BufferCopy(0, 0, vertexBufferSize));
+        transferQueue->Submit(transferCommandBuffer.GetVkCommandBuffer());
         transferCommandBuffer.Reset();
 
         // Index Buffer
         vk::DeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
-        CVulkanBuffer stagingIndexBuffer(vkDevice, device.GetVkPhysicalDeviceMemoryProperties(), vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vk::BufferUsageFlagBits::eTransferSrc, indices.data(), indexBufferSize);
-        indexBuffer = CVulkanBuffer(vkDevice, device.GetVkPhysicalDeviceMemoryProperties(), vk::MemoryPropertyFlagBits::eDeviceLocal, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, nullptr, indexBufferSize);
+        CVulkanBuffer stagingIndexBuffer(vkDevice, memoryProperties, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vk::BufferUsageFlagBits::eTransferSrc, indices.data(), indexBufferSize);
+        indexBuffer = std::make_unique<CVulkanBuffer>(vkDevice, memoryProperties, vk::MemoryPropertyFlagBits::eDeviceLocal, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, nullptr, indexBufferSize);
 
-        transferCommandBuffer.CopyBuffer(stagingIndexBuffer.GetVkBuffer(), indexBuffer.GetVkBuffer(), vk::BufferCopy(0, 0, indexBufferSize));
-        transferQueue.Submit(transferCommandBuffer.GetVkCommandBuffer());
+        transferCommandBuffer.CopyBuffer(stagingIndexBuffer.GetVkBuffer(), indexBuffer->GetVkBuffer(), vk::BufferCopy(0, 0, indexBufferSize));
+        transferQueue->Submit(transferCommandBuffer.GetVkCommandBuffer());
         transferCommandBuffer.Reset();
+
+        ui = std::make_unique<CVulkanUi>(window, instance.get(), device.get(), graphicsQueue.get(), graphicsCommandBuffers[0].get(), 2, surfaceFormat.format);
     }
 
     void OnResize() {
-        swapchain.Recreate();
+        swapchain->Recreate();
     }
 
     void DrawFrame() {
-        CVulkanFrame frame = swapchain.GetNextFrame();
-        graphicsCommandPool.Reset();
+        CVulkanFrame frame = swapchain->GetNextFrame();
+        graphicsCommandPool->Reset();
 
         CVulkanRender render;
         render.colorAttachments = { vk::RenderingAttachmentInfo(frame.imageView, vk::ImageLayout::eColorAttachmentOptimal,
@@ -112,17 +117,17 @@ public:
                                                                      vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
                                                                      vk::ClearDepthStencilValue(1.0f, 0)) };
         */
-        render.pipeline = pipeline.GetVkPipeline();
+        render.pipeline = pipeline->GetVkPipeline();
         render.verticesCount = static_cast<uint32_t>(vertices.size());
-        render.vertexBuffers = { vertexBuffer.GetVkBuffer() };
+        render.vertexBuffers = { vertexBuffer->GetVkBuffer() };
         render.vertexBufferOffsets = { 0 };
         render.indicesCount = static_cast<uint32_t>(indices.size());
-        render.indexBuffer = indexBuffer.GetVkBuffer();
+        render.indexBuffer = indexBuffer->GetVkBuffer();
         render.indexBufferOffset = 0;
 
-        graphicsCommandBuffers[frame.currentFrame].Render(frame, render);
-        graphicsQueue.Submit(graphicsCommandBuffers[frame.currentFrame].GetVkCommandBuffer(), frame.submitSemaphore, frame.acquireSemaphore, vk::PipelineStageFlagBits::eColorAttachmentOutput, frame.acquireFence);
-        swapchain.Present();
+        graphicsCommandBuffers[frame.currentFrame]->Render(frame, render);
+        graphicsQueue->Submit(graphicsCommandBuffers[frame.currentFrame]->GetVkCommandBuffer(), frame.submitSemaphore, frame.acquireSemaphore, vk::PipelineStageFlagBits::eColorAttachmentOutput, frame.acquireFence);
+        swapchain->Present();
     }
 
     // Hook up events to the renderer.
