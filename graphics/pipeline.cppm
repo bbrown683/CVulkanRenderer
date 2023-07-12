@@ -7,20 +7,18 @@ export module pipeline;
 
 // Vertex Properties.
 export struct CVulkanVertex {
-    glm::fvec4 position;
-    glm::fvec4 color;
+    glm::vec2 position;
+    glm::vec3 color;
 
     static std::vector<vk::VertexInputAttributeDescription> GetVkVertexInputAttributeDescriptions() {
         return { 
-            vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(CVulkanVertex, position)),
-            vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(CVulkanVertex, color)),
+            vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32Sfloat, offsetof(CVulkanVertex, position)),
+            vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(CVulkanVertex, color)),
         };
     }
 
-    static std::vector<vk::VertexInputBindingDescription> GetVkVertexInputBindingDecriptions() {
-        return {
-            vk::VertexInputBindingDescription(0, sizeof(CVulkanVertex), vk::VertexInputRate::eVertex)
-        };
+    static vk::VertexInputBindingDescription GetVkVertexInputBindingDecription() {
+        return vk::VertexInputBindingDescription(0, sizeof(CVulkanVertex), vk::VertexInputRate::eVertex);
     }
 };
 
@@ -39,13 +37,11 @@ export class CVulkanGraphicsPipeline {
     vk::UniquePipelineLayout layout;
     vk::UniqueDescriptorSet descriptorSet;
     vk::UniqueDescriptorSetLayout descriptorSetLayout;
-    vk::UniqueShaderModule vertexShaderModule;
-    vk::UniqueShaderModule fragmentShaderModule;
     std::vector<vk::VertexInputAttributeDescription> attributeDescriptions;
     std::vector<vk::VertexInputBindingDescription> bindingDescriptions;
 public:
     CVulkanGraphicsPipeline() = default;
-    CVulkanGraphicsPipeline(vk::Device device, std::string vertexShaderFile, std::string fragmentShaderFile) {
+    CVulkanGraphicsPipeline(vk::Device device, std::string vertexShaderFile, std::string fragmentShaderFile, vk::Format colorFormat) {
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesInfo;
 
         // Vertex Shader
@@ -54,12 +50,17 @@ public:
         vertexShaderModuleInfo.codeSize = vertexShaderCode.size();
         vertexShaderModuleInfo.pCode = reinterpret_cast<uint32_t*>(vertexShaderCode.data());
 
-        vertexShaderModule = device.createShaderModuleUnique(vertexShaderModuleInfo);
-        shaderStagesInfo.push_back(vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eVertex, *vertexShaderModule, "main"));
+        vk::UniqueShaderModule vertexShaderModule = device.createShaderModuleUnique(vertexShaderModuleInfo);
+
+        vk::PipelineShaderStageCreateInfo vertexShaderStageInfo;
+        vertexShaderStageInfo.setStage(vk::ShaderStageFlagBits::eVertex);
+        vertexShaderStageInfo.setModule(*vertexShaderModule);
+        vertexShaderStageInfo.setPName("main");
+        shaderStagesInfo.push_back(vertexShaderStageInfo);
 
         auto vertexInputAttributeDescriptions = CVulkanVertex::GetVkVertexInputAttributeDescriptions();
-        auto vertexInputBindingDescriptions = CVulkanVertex::GetVkVertexInputBindingDecriptions();
-        auto vertexInputStateInfo = vk::PipelineVertexInputStateCreateInfo({}, vertexInputBindingDescriptions, vertexInputAttributeDescriptions);
+        auto vertexInputBindingDescription = CVulkanVertex::GetVkVertexInputBindingDecription();
+        vk::PipelineVertexInputStateCreateInfo vertexInputStateInfo({}, vertexInputBindingDescription, vertexInputAttributeDescriptions);
 
         // Fragment Shader
         std::vector<char> fragmentShaderCode = ReadSPIRVFile(fragmentShaderFile);
@@ -67,28 +68,74 @@ public:
         fragmentShaderModuleInfo.codeSize = fragmentShaderCode.size();
         fragmentShaderModuleInfo.pCode = reinterpret_cast<uint32_t*>(fragmentShaderCode.data());
 
-        fragmentShaderModule = device.createShaderModuleUnique(fragmentShaderModuleInfo);
-        shaderStagesInfo.push_back(vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eFragment, *fragmentShaderModule, "main"));
+        vk::UniqueShaderModule fragmentShaderModule = device.createShaderModuleUnique(fragmentShaderModuleInfo);
 
-        auto inputAssemblyStateInfo = vk::PipelineInputAssemblyStateCreateInfo({}, vk::PrimitiveTopology::eTriangleList);
-        auto viewportStateInfo = vk::PipelineViewportStateCreateInfo({});
+        vk::PipelineShaderStageCreateInfo fragmentShaderStageInfo;
+        fragmentShaderStageInfo.setStage(vk::ShaderStageFlagBits::eFragment);
+        fragmentShaderStageInfo.setModule(*fragmentShaderModule);
+        fragmentShaderStageInfo.setPName("main");
+        shaderStagesInfo.push_back(fragmentShaderStageInfo);
 
-        auto rasterizationStateInfo = vk::PipelineRasterizationStateCreateInfo({}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone, vk::FrontFace::eCounterClockwise, false, 0.0f, 0.0f, 0.0f, 1.0f);
-        auto multisampleStateInfo = vk::PipelineMultisampleStateCreateInfo({}, vk::SampleCountFlagBits::e1);
-        auto colorBlendStateInfo = vk::PipelineColorBlendStateCreateInfo({});
+        vk::PipelineInputAssemblyStateCreateInfo inputAssemblyStateInfo; 
+        inputAssemblyStateInfo.setTopology(vk::PrimitiveTopology::eTriangleList);
+
+        vk::Viewport viewport;
+        vk::Rect2D scissor;
+        vk::PipelineViewportStateCreateInfo viewportStateInfo({}, viewport, scissor);
+
+        vk::PipelineRasterizationStateCreateInfo rasterizationStateInfo;
+        rasterizationStateInfo.setPolygonMode(vk::PolygonMode::eFill);
+        rasterizationStateInfo.setCullMode(vk::CullModeFlagBits::eNone);
+        rasterizationStateInfo.setFrontFace(vk::FrontFace::eCounterClockwise);
+        rasterizationStateInfo.setLineWidth(1.0f);
+
+        vk::PipelineMultisampleStateCreateInfo multisampleStateInfo;
+        multisampleStateInfo.setRasterizationSamples(vk::SampleCountFlagBits::e1);
+
+        vk::PipelineColorBlendAttachmentState colorBlendAttachmentState;
+        colorBlendAttachmentState.setBlendEnable(false);
+        colorBlendAttachmentState.setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eA);
+
+        vk::PipelineColorBlendStateCreateInfo colorBlendStateInfo;
+        colorBlendStateInfo.setAttachments(colorBlendAttachmentState);
 
         // These will be modified via command buffers dynamically instead.
-        auto dynamicStates = { vk::DynamicState::eViewportWithCount, vk::DynamicState::eScissorWithCount, vk::DynamicState::eCullMode, vk::DynamicState::eFrontFace, vk::DynamicState::ePrimitiveTopology };
+        auto dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
         auto dynamicStateInfo = vk::PipelineDynamicStateCreateInfo({}, dynamicStates);
 
+        /*
         auto descriptorSetLayoutInfo = vk::DescriptorSetLayoutCreateInfo({});
         descriptorSetLayout = device.createDescriptorSetLayoutUnique(descriptorSetLayoutInfo);
 
         auto pushConstantRange = vk::PushConstantRange(vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4));
-        auto layoutInfo = vk::PipelineLayoutCreateInfo({}, *descriptorSetLayout, pushConstantRange);
+        */
+        auto layoutInfo = vk::PipelineLayoutCreateInfo({});
         layout = device.createPipelineLayoutUnique(layoutInfo);
 
-        auto pipelineInfo = vk::GraphicsPipelineCreateInfo({}, shaderStagesInfo, &vertexInputStateInfo, &inputAssemblyStateInfo, nullptr, &viewportStateInfo, &rasterizationStateInfo, &multisampleStateInfo, nullptr, &colorBlendStateInfo, &dynamicStateInfo, *layout, nullptr);
+        /*
+        // Provide information for dynamic rendering
+        VkPipelineRenderingCreateInfoKHR pipeline_create{VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR};
+        pipeline_create.pNext                   = VK_NULL_HANDLE;
+        pipeline_create.colorAttachmentCount    = 1;
+        pipeline_create.pColorAttachmentFormats = &color_rendering_format;
+        pipeline_create.depthAttachmentFormat   = depth_format;
+        pipeline_create.stencilAttachmentFormat = depth_format;
+        */
+        vk::PipelineRenderingCreateInfo pipelineRenderingInfo;
+        pipelineRenderingInfo.setColorAttachmentFormats(colorFormat);
+
+        vk::GraphicsPipelineCreateInfo pipelineInfo;
+        pipelineInfo.setStages(shaderStagesInfo);
+        pipelineInfo.setPVertexInputState(&vertexInputStateInfo);
+        pipelineInfo.setPInputAssemblyState(&inputAssemblyStateInfo);
+        pipelineInfo.setPViewportState(&viewportStateInfo);
+        pipelineInfo.setPRasterizationState(&rasterizationStateInfo);
+        pipelineInfo.setPMultisampleState(&multisampleStateInfo);
+        pipelineInfo.setPColorBlendState(&colorBlendStateInfo);
+        pipelineInfo.setPDynamicState(&dynamicStateInfo);
+        pipelineInfo.setLayout(*layout);
+        pipelineInfo.setPNext(&pipelineRenderingInfo);
+        
         vk::ResultValue<vk::UniquePipeline> createGraphicsPipelineResultValue = device.createGraphicsPipelineUnique(nullptr, pipelineInfo);
         vk::Result createGraphicsPipelineResult = createGraphicsPipelineResultValue.result;
         if(createGraphicsPipelineResult == vk::Result::eSuccess) {
@@ -96,12 +143,8 @@ public:
         }
     }
     
-    vk::ShaderModule GetVertexShaderModule() {
-        return vk::ShaderModule();
-    }
-
-    vk::ShaderModule GetFragmentShaderModule() {
-        return vk::ShaderModule();
+    vk::Pipeline GetVkPipeline() {
+        return *pipeline;
     }
 
 private:

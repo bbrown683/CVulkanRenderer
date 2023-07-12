@@ -7,7 +7,6 @@ export class CSDLWindow {
     SDL_Window* window;
     bool running;
 public:
-    CSDLWindow() = default;
     CSDLWindow(int width, int height) : running(true) {
         // Create an SDL window that supports Vulkan rendering.
         if(SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -24,8 +23,8 @@ public:
         SDL_Quit();
     }
     
-    SDL_Window* GetSDL_Window() {
-        return window;
+    void SetTitle(const char* title) {
+        SDL_SetWindowTitle(window, title);
     }
 
     bool IsRunning() {
@@ -44,5 +43,9 @@ public:
                 break;
             }
         }
+    }
+
+    SDL_Window* GetSDL_Window() {
+        return window;
     }
 };

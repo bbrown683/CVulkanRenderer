@@ -11,9 +11,9 @@ export class CVulkanDevice {
     vk::PhysicalDeviceFeatures features;
     vk::PhysicalDeviceLimits limits;
     vk::PhysicalDeviceMemoryProperties memoryProperties;
-    uint8_t computeQueueIndex;
-    uint8_t graphicsQueueIndex;
-    uint8_t transferQueueIndex;
+    uint32_t computeQueueIndex;
+    uint32_t graphicsQueueIndex;
+    uint32_t transferQueueIndex;
     std::vector<vk::LayerProperties> availableLayers;
     std::vector<const char*> enabledLayers;
     std::vector<vk::ExtensionProperties> availableExtensions;
@@ -53,28 +53,21 @@ public:
         }
 
         std::vector<float> priorities = { 1.0f };
-        auto graphicsInfo = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), graphicsQueueIndex, priorities);
-        auto computeInfo = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), computeQueueIndex, priorities);
-        auto transferInfo = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), transferQueueIndex, priorities);
+        vk::DeviceQueueCreateInfo graphicsInfo(vk::DeviceQueueCreateFlags(), graphicsQueueIndex, priorities);
+        vk::DeviceQueueCreateInfo computeInfo(vk::DeviceQueueCreateFlags(), computeQueueIndex, priorities);
+        vk::DeviceQueueCreateInfo transferInfo(vk::DeviceQueueCreateFlags(), transferQueueIndex, priorities);
 
-        std::vector<vk::PhysicalDeviceFeatures> features;
-        auto defaultPhysicalDeviceFeatures = vk::PhysicalDeviceFeatures()
-            .setFillModeNonSolid(true)
-            .setSamplerAnisotropy(true);
+        vk::PhysicalDeviceFeatures defaultPhysicalDeviceFeatures;
+        defaultPhysicalDeviceFeatures.setFillModeNonSolid(true);
+        defaultPhysicalDeviceFeatures.setSamplerAnisotropy(true);
 
         // Enable Dynamic Rendering features.
-        /*
-        auto extendedDynamicState3PhysicalDeviceFeatures = vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT()
-            .setExtendedDynamicState3PolygonMode(true)
-            .setExtendedDynamicState3RasterizationSamples(true);
-        */
-        auto enableExtendedDynamicStatePhysicalDeviceFeatures = vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT(true);
-        auto dynamicRenderingPhysicalDeviceFeatures = vk::PhysicalDeviceDynamicRenderingFeaturesKHR(true);
-        auto deviceFeatures = vk::PhysicalDeviceFeatures2(defaultPhysicalDeviceFeatures, &dynamicRenderingPhysicalDeviceFeatures);
+        vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures(true);
+        vk::PhysicalDeviceFeatures2 deviceFeatures(defaultPhysicalDeviceFeatures, &dynamicRenderingFeatures);
 
         std::vector<vk::DeviceQueueCreateInfo> queueInfos = { graphicsInfo, computeInfo, transferInfo };
         std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-        auto deviceInfo = vk::DeviceCreateInfo({}, queueInfos, nullptr, deviceExtensions, nullptr, &deviceFeatures);
+        vk::DeviceCreateInfo deviceInfo({}, queueInfos, nullptr, deviceExtensions, nullptr, &deviceFeatures);
         device = physicalDevice.createDeviceUnique(deviceInfo);
         CVulkanFunctionLoader::LoadDeviceFunctions(*device);
     }
@@ -85,7 +78,7 @@ public:
     CVulkanDevice& operator=(CVulkanDevice&& device) = default;
 
     ~CVulkanDevice() {
-        if(device) {
+        if(*device) {
             device->waitIdle(); // Wait for all operations to complete before shutting down.
         }
     }
@@ -126,15 +119,15 @@ public:
         return enabledExtensions;
     }
 
-    uint8_t GetGraphicsQueueIndex() {
+    uint32_t GetGraphicsQueueIndex() {
         return graphicsQueueIndex;
     }
     
-    uint8_t GetComputeQueueIndex() {
+    uint32_t GetComputeQueueIndex() {
         return computeQueueIndex;
     }
 
-    uint8_t GetTransferQueueIndex() {
+    uint32_t GetTransferQueueIndex() {
         return transferQueueIndex;
     }
 };

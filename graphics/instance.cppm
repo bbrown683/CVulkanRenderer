@@ -3,9 +3,6 @@ module;
 #include "platform/SDL.hpp"
 export module instance;
 import <vector>;
-#ifdef _DEBUG
-import debug;
-#endif
 import loader;
 
 export class CVulkanInstance {
@@ -37,8 +34,8 @@ public:
 
         CVulkanFunctionLoader::Load();
 
-        auto applicationInfo = vk::ApplicationInfo("CVulkan", VK_MAKE_VERSION(1, 0, 0), "CVulkanRenderer", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_3);
-        auto instanceInfo = vk::InstanceCreateInfo({}, &applicationInfo, static_cast<uint32_t>(enabledLayers.size()), enabledLayers.data(), static_cast<uint32_t>(enabledExtensions.size()), enabledExtensions.data());
+        vk::ApplicationInfo applicationInfo("CVulkan", VK_MAKE_VERSION(1, 0, 0), "CVulkanRenderer", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_3);
+        vk::InstanceCreateInfo instanceInfo({}, &applicationInfo, static_cast<uint32_t>(enabledLayers.size()), enabledLayers.data(), static_cast<uint32_t>(enabledExtensions.size()), enabledExtensions.data());
 
         availableLayers = vk::enumerateInstanceLayerProperties();
         availableExtensions = vk::enumerateInstanceExtensionProperties();
@@ -63,11 +60,30 @@ public:
         debugUtilsInfo.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
             | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
             | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
-        debugUtilsInfo.pfnUserCallback = DebugCallback::debugUtilsCallback;
+        debugUtilsInfo.pfnUserCallback = debugUtilsCallback;
         debugUtilsMessenger = instance->createDebugUtilsMessengerEXTUnique(debugUtilsInfo);
 #endif
         physicalDevices = instance->enumeratePhysicalDevices();
     }
+
+#ifdef _DEBUG
+    static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugUtilsCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData) {
+        vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverityEnum = vk::DebugUtilsMessageSeverityFlagBitsEXT(messageSeverity);
+        const char* message = pCallbackData->pMessage;
+        switch(messageSeverityEnum) {
+            using enum vk::DebugUtilsMessageSeverityFlagBitsEXT;
+            case eVerbose: printf("VERBOSE: %s\n", message); break;
+            case eInfo: printf("INFO: %s\n", message); break;
+            case eWarning: printf("WARNING: %s\n", message); break;
+            case eError: printf("ERROR: %s\n", message); break;
+        }
+        return VK_FALSE;
+    }
+#endif
 
     vk::Instance GetVkInstance() {
         return *instance;

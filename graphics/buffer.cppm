@@ -1,108 +1,47 @@
 module;
 #include "platform/vulkan.hpp"
-#define VMA_IMPLEMENTATION
-#define VMA_STATIC_VULKAN_FUNCTIONS 0
-#define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
-#include <vma/vk_mem_alloc.h>
 export module buffer;
 import <exception>;
 
-export enum EBufferAllocatorCreationError {
-    ALLOCATOR_CREATION_FAILED,
-};
-
-export class CVulkanBufferAllocatorCreationException : public std::exception {
-    EBufferAllocatorCreationError error;
-public:
-    CVulkanBufferAllocatorCreationException(EBufferAllocatorCreationError error) : error(error) {}
-
-    char* what() {
-        return (char*)"Failed to create buffer allocator due to error: " + error;
-    }
-
-    EBufferAllocatorCreationError GetError() {
-        return error;
-    }
-};
-
-export class CVulkanBufferAllocator {
-    VmaAllocator allocator;
-public:
-    CVulkanBufferAllocator() = default;
-    CVulkanBufferAllocator(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device) {
-        VmaVulkanFunctions functions {};
-        functions.vkAllocateMemory = VULKAN_HPP_DEFAULT_DISPATCHER.vkAllocateMemory;
-        functions.vkFreeMemory = VULKAN_HPP_DEFAULT_DISPATCHER.vkFreeMemory;
-        functions.vkBindBufferMemory = VULKAN_HPP_DEFAULT_DISPATCHER.vkBindBufferMemory;
-        functions.vkBindBufferMemory2KHR = VULKAN_HPP_DEFAULT_DISPATCHER.vkBindBufferMemory2;
-        functions.vkBindImageMemory = VULKAN_HPP_DEFAULT_DISPATCHER.vkBindImageMemory;
-        functions.vkBindImageMemory2KHR = VULKAN_HPP_DEFAULT_DISPATCHER.vkBindImageMemory2;
-        functions.vkCmdCopyBuffer = VULKAN_HPP_DEFAULT_DISPATCHER.vkCmdCopyBuffer;
-        functions.vkMapMemory = VULKAN_HPP_DEFAULT_DISPATCHER.vkMapMemory;
-        functions.vkUnmapMemory = VULKAN_HPP_DEFAULT_DISPATCHER.vkUnmapMemory;
-        functions.vkCreateBuffer = VULKAN_HPP_DEFAULT_DISPATCHER.vkCreateBuffer;
-        functions.vkDestroyBuffer = VULKAN_HPP_DEFAULT_DISPATCHER.vkDestroyBuffer;
-        functions.vkCreateImage = VULKAN_HPP_DEFAULT_DISPATCHER.vkCreateImage;
-        functions.vkDestroyImage = VULKAN_HPP_DEFAULT_DISPATCHER.vkDestroyImage;
-        functions.vkGetPhysicalDeviceProperties = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetPhysicalDeviceProperties;
-        functions.vkGetPhysicalDeviceMemoryProperties = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetPhysicalDeviceMemoryProperties;
-        functions.vkGetPhysicalDeviceMemoryProperties2KHR = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetPhysicalDeviceMemoryProperties2;
-        functions.vkGetBufferMemoryRequirements = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetBufferMemoryRequirements;
-        functions.vkGetBufferMemoryRequirements2KHR = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetBufferMemoryRequirements2;
-        functions.vkGetDeviceBufferMemoryRequirements = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetDeviceBufferMemoryRequirements;
-        functions.vkGetImageMemoryRequirements = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetImageMemoryRequirements;
-        functions.vkGetImageMemoryRequirements2KHR = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetImageMemoryRequirements2;
-        functions.vkGetDeviceImageMemoryRequirements = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetDeviceImageMemoryRequirements;
-        functions.vkFlushMappedMemoryRanges = VULKAN_HPP_DEFAULT_DISPATCHER.vkFlushMappedMemoryRanges;
-        functions.vkInvalidateMappedMemoryRanges = VULKAN_HPP_DEFAULT_DISPATCHER.vkInvalidateMappedMemoryRanges;
-
-        VmaAllocatorCreateInfo allocatorCreateInfo = {};
-        allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
-        allocatorCreateInfo.physicalDevice = physicalDevice;
-        allocatorCreateInfo.device = device;
-        allocatorCreateInfo.instance = instance;
-        allocatorCreateInfo.pVulkanFunctions = &functions;
-        vk::Result result = vk::Result(vmaCreateAllocator(&allocatorCreateInfo, &allocator));
-        if(result != vk::Result::eSuccess) {
-            throw CVulkanBufferAllocatorCreationException(EBufferAllocatorCreationError::ALLOCATOR_CREATION_FAILED);
-        }
-    }
-
-    VmaAllocation AllocateMemory() {
-        // TODO: Fill these out.
-        VmaAllocation allocation;
-        vk::MemoryRequirements memoryRequirements;
-
-        VmaAllocationCreateInfo allocationCreateInfo;
-        VmaAllocationInfo allocationInfo;
-        vk::Result result = vk::Result(vmaAllocateMemory(allocator, &memoryRequirements.vk::MemoryRequirements::operator const VkMemoryRequirements & (), &allocationCreateInfo, &allocation, &allocationInfo));
-        if(result == vk::Result::eSuccess) {
-            return allocation;
-        }
-        return nullptr;
-    }
-
-    void FreeMemory(VmaAllocation allocation) {
-        vmaFreeMemory(allocator, allocation);
-    }
-
-    VmaAllocator* GetVmaAllocator() {
-        return &allocator;
-    }
-};
-
 export class CVulkanBuffer {
     vk::UniqueBuffer buffer;
-    vk::Device device;
-    VmaAllocator* allocator;
-    VmaAllocation allocation;
+    vk::UniqueDeviceMemory memory;
 public:
     CVulkanBuffer() = default;
-    CVulkanBuffer(vk::Device device, VmaAllocator* allocator) : device(device), allocator(allocator) {
+    CVulkanBuffer(vk::Device device, vk::PhysicalDeviceMemoryProperties memoryProperties, vk::MemoryPropertyFlags desiredPropertyFlags, vk::BufferUsageFlags usage, void* data, vk::DeviceSize dataSize) {
+        auto bufferInfo = vk::BufferCreateInfo({}, dataSize, usage);
+        buffer = device.createBufferUnique(bufferInfo);
 
+        vk::MemoryRequirements memoryRequirements = device.getBufferMemoryRequirements(*buffer);
+        auto memoryTypeIndex = GetMemoryTypeIndex(memoryProperties, memoryRequirements.memoryTypeBits, desiredPropertyFlags);
+        if(memoryTypeIndex == -1) {
+            printf("CVulkanBuffer::CVulkanBuffer: Failed to find a valid memory type for buffer");
+        }
+        vk::MemoryAllocateInfo allocateInfo(memoryRequirements.size, memoryTypeIndex);
+        memory = device.allocateMemoryUnique(allocateInfo);
+        device.bindBufferMemory(*buffer, *memory, 0);
+
+        if(data != nullptr) {
+            void* handle = device.mapMemory(*memory, 0, dataSize);
+            memcpy(handle, data, static_cast<size_t>(dataSize));
+            device.unmapMemory(*memory);
+        }
     }
 
-    ~CVulkanBuffer() {
-        vmaFreeMemory(*allocator, allocation);
+    vk::Buffer GetVkBuffer() {
+        return *buffer;
+    }
+
+private:
+    uint32_t GetMemoryTypeIndex(vk::PhysicalDeviceMemoryProperties memoryProperties, uint32_t memoryTypeBits, vk::MemoryPropertyFlags desiredPropertyFlags) {
+        for(uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+            if((memoryTypeBits & 1) == 1) {
+                if((memoryProperties.memoryTypes[i].propertyFlags & desiredPropertyFlags) == desiredPropertyFlags) {
+                    return i;
+                }
+            }
+            memoryTypeBits >>= 1;
+        }
+        return -1;
     }
 };

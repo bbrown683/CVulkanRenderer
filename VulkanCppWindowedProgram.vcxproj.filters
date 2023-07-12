@@ -23,7 +23,6 @@
     <ClCompile Include="graphics\device.cppm" />
     <ClCompile Include="graphics\queue.cppm" />
     <ClCompile Include="graphics\loader.cppm" />
-    <ClCompile Include="graphics\debug.cppm" />
     <ClCompile Include="graphics\window.cppm" />
     <ClCompile Include="graphics\swapchain.cppm" />
     <ClCompile Include="graphics\renderer.cppm" />
