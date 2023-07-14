@@ -14,8 +14,13 @@ export class CVulkanUi {
     vk::UniqueDescriptorPool descriptorPool;
     vk::UniquePipelineCache pipelineCache;
 public:
-    CVulkanUi() = default;
     CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandBuffer* commandBuffer, uint32_t imageCount, vk::Format colorFormat) {
+        auto vkInstance = instance->GetVkInstance();
+        auto vkPhysicalDevice = device->GetVkPhysicalDevice();
+        auto vkDevice = device->GetVkDevice();
+        auto vkQueue = queue->GetVkQueue();
+        auto queueFamily = queue->GetFamilyIndex();
+
         std::vector<vk::DescriptorPoolSize> descriptorPoolSizes = {
             { vk::DescriptorType::eSampler, 1000 },
             { vk::DescriptorType::eCombinedImageSampler, 1000 },
@@ -35,9 +40,6 @@ public:
         descriptorPoolInfo.setMaxSets(1000);
         descriptorPoolInfo.setPoolSizes(descriptorPoolSizes);
 
-
-        auto vkDevice = device->GetVkDevice();
-        auto vkPhysicalDevice = device->GetVkPhysicalDevice();
         descriptorPool = vkDevice.createDescriptorPoolUnique(descriptorPoolInfo);
 
         ImGui::CreateContext();
@@ -49,15 +51,14 @@ public:
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
-        auto vkInstance = instance->GetVkInstance();
-        auto vkQueue = queue->GetVkQueue();
-        auto queueFamily = queue->GetFamilyIndex();
+
 
         ImGui_ImplVulkan_InitInfo imguiVulkanInitInfo;
         imguiVulkanInitInfo.Instance = vkInstance;
         imguiVulkanInitInfo.PhysicalDevice = vkPhysicalDevice;
         imguiVulkanInitInfo.Device = vkDevice;
         imguiVulkanInitInfo.Queue = vkQueue;
+        imguiVulkanInitInfo.QueueFamily = queueFamily;
         imguiVulkanInitInfo.PipelineCache = *pipelineCache;
         imguiVulkanInitInfo.DescriptorPool = *descriptorPool;
         imguiVulkanInitInfo.Subpass = 0;
@@ -73,11 +74,8 @@ public:
             printf("CVulkanUi::CVulkanUi: Failed to initialize ImGui");
         }
 
-        commandBuffer->Begin();
-        auto vkCommandBuffer = commandBuffer->GetVkCommandBuffer();
-        ImGui_ImplVulkan_CreateFontsTexture(vkCommandBuffer);
-        commandBuffer->End();
-        queue->Submit(vkCommandBuffer);
+        commandBuffer->UploadImguiFonts();
+        queue->Submit(commandBuffer);
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
 
@@ -97,4 +95,8 @@ public:
         ImGui::Render();
         return ImGui::GetDrawData();
     }
+};
+
+export class CVulkanUiRenderer {
+
 };

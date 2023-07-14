@@ -3,6 +3,9 @@ module;
 export module device;
 import <algorithm>;
 import loader;
+import queue;
+import buffer;
+import pipeline;
 
 export class CVulkanDevice {
     vk::UniqueDevice device;
@@ -11,15 +14,15 @@ export class CVulkanDevice {
     vk::PhysicalDeviceFeatures features;
     vk::PhysicalDeviceLimits limits;
     vk::PhysicalDeviceMemoryProperties memoryProperties;
-    uint32_t computeQueueIndex;
-    uint32_t graphicsQueueIndex;
-    uint32_t transferQueueIndex;
     std::vector<vk::LayerProperties> availableLayers;
     std::vector<const char*> enabledLayers;
     std::vector<vk::ExtensionProperties> availableExtensions;
     std::vector<const char*> enabledExtensions;
+    uint32_t graphicsQueueIndex;
+    uint32_t computeQueueIndex;
+    uint32_t transferQueueIndex;
+    friend class CVulkanDeviceDeleter;
 public:
-    CVulkanDevice() = default;
     CVulkanDevice(vk::PhysicalDevice physicalDevice) : physicalDevice(physicalDevice) {
         availableLayers = physicalDevice.enumerateDeviceLayerProperties();
         availableExtensions = physicalDevice.enumerateDeviceExtensionProperties();
@@ -66,18 +69,14 @@ public:
         vk::PhysicalDeviceFeatures2 deviceFeatures(defaultPhysicalDeviceFeatures, &dynamicRenderingFeatures);
 
         std::vector<vk::DeviceQueueCreateInfo> queueInfos = { graphicsInfo, computeInfo, transferInfo };
-        std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME };
-        vk::DeviceCreateInfo deviceInfo({}, queueInfos, nullptr, deviceExtensions, nullptr, &deviceFeatures);
+        enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME };
+        vk::DeviceCreateInfo deviceInfo({}, queueInfos, nullptr, enabledExtensions, nullptr, &deviceFeatures);
         device = physicalDevice.createDeviceUnique(deviceInfo);
         CVulkanFunctionLoader::LoadDeviceFunctions(*device);
     }
 
     ~CVulkanDevice() {
-        device->waitIdle(); // Wait for all operations to complete before shutting down.
-    }
-
-    vk::Device operator*() const {
-        return *device;
+        device->waitIdle();
     }
 
     vk::SampleCountFlags GetMaximumSupportedMultisamping() {
@@ -116,15 +115,23 @@ public:
         return enabledExtensions;
     }
 
-    uint32_t GetGraphicsQueueIndex() {
-        return graphicsQueueIndex;
-    }
-    
-    uint32_t GetComputeQueueIndex() {
-        return computeQueueIndex;
+    CVulkanQueue GetGraphicsQueue() {
+        return CVulkanQueue(*device, graphicsQueueIndex);
     }
 
-    uint32_t GetTransferQueueIndex() {
-        return transferQueueIndex;
+    CVulkanQueue GetComputeQueue() {
+        return CVulkanQueue(*device, computeQueueIndex);
+    }
+
+    CVulkanQueue GetTransferQueue() {
+        return CVulkanQueue(*device, transferQueueIndex);
+    }
+
+    CVulkanGraphicsPipeline CreateGraphicsPipeline(std::string vertexShaderFile, std::string fragmentShaderFile, vk::Format colorFormat) {
+        return CVulkanGraphicsPipeline(*device, "vertex.spv", "fragment.spv", colorFormat);
+    }
+
+    CVulkanBuffer CreateBuffer(vk::MemoryPropertyFlags desiredPropertyFlags, vk::BufferUsageFlags usage, void* data, vk::DeviceSize dataSize) {
+        return CVulkanBuffer(*device, memoryProperties, desiredPropertyFlags, usage, data, dataSize);
     }
 };

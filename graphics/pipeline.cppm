@@ -38,7 +38,6 @@ export class CVulkanGraphicsPipeline {
     vk::UniqueDescriptorSet descriptorSet;
     vk::UniqueDescriptorSetLayout descriptorSetLayout;
 public:
-    CVulkanGraphicsPipeline() = default;
     CVulkanGraphicsPipeline(vk::Device device, std::string vertexShaderFile, std::string fragmentShaderFile, vk::Format colorFormat) {
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStagesInfo;
 

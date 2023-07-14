@@ -175,6 +175,7 @@
     <ClCompile Include="graphics\buffer.cppm" />
     <ClCompile Include="graphics\camera.cppm" />
     <ClCompile Include="graphics\cmd.cppm" />
+    <ClCompile Include="graphics\types.cppm" />
     <ClCompile Include="graphics\ui.cppm" />
     <ClCompile Include="graphics\instance.cppm" />
     <ClCompile Include="graphics\loader.cppm" />

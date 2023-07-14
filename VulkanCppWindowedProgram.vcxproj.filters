@@ -58,6 +58,7 @@
     <ClCompile Include="graphics\ui.cppm">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="graphics\types.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\platform\vulkan.hpp">

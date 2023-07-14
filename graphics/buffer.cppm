@@ -7,7 +7,6 @@ export class CVulkanBuffer {
     vk::UniqueBuffer buffer;
     vk::UniqueDeviceMemory memory;
 public:
-    CVulkanBuffer() = default;
     CVulkanBuffer(vk::Device device, vk::PhysicalDeviceMemoryProperties memoryProperties, vk::MemoryPropertyFlags desiredPropertyFlags, vk::BufferUsageFlags usage, void* data, vk::DeviceSize dataSize) {
         auto bufferInfo = vk::BufferCreateInfo({}, dataSize, usage);
         buffer = device.createBufferUnique(bufferInfo);

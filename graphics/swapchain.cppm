@@ -4,6 +4,10 @@ module;
 export module swapchain;
 import <exception>;
 import <vector>;
+import instance;
+import device;
+import queue;
+import types;
 
 export enum EVulkanSwapchainCreationError {
     SURFACE_CREATION_FAILED,
@@ -24,21 +28,9 @@ public:
     }
 };
 
-// Data used every frame.
-export struct CVulkanFrame {
-    uint32_t currentImage;
-    uint32_t currentFrame;
-    vk::Extent2D extent;
-    vk::Image image;
-    vk::ImageView imageView;
-    vk::Fence acquireFence;
-    vk::Semaphore acquireSemaphore;
-    vk::Semaphore submitSemaphore;
-};
-
 export class CVulkanSwapchain {
-    vk::PhysicalDevice physicalDevice;
     vk::Device device;
+    vk::PhysicalDevice physicalDevice;
     vk::Queue presentQueue;
     SDL_Window* window;
     vk::UniqueSurfaceKHR surface;
@@ -56,15 +48,16 @@ export class CVulkanSwapchain {
     uint32_t currentImage;
     bool vsync;
 public:
-    CVulkanSwapchain() = default;
+
     // On Failure can throw a SwapchainCreationException.
-    CVulkanSwapchain(vk::Instance instance, vk::PhysicalDevice physicalDevice, vk::Device device, vk::Queue presentQueue, SDL_Window* window, uint32_t imageCount, bool vsync = true)
-            : physicalDevice(physicalDevice), device(device), presentQueue(presentQueue), window(window), imageCount(imageCount), vsync(vsync), currentFrame(0), currentImage(0) {
+    CVulkanSwapchain(CVulkanInstance* instance, CVulkanDevice* device, CVulkanQueue* presentQueue, SDL_Window* window, uint32_t imageCount, bool vsync = true)
+            : physicalDevice(device->GetVkPhysicalDevice()), device(device->GetVkDevice()), presentQueue(presentQueue->GetVkQueue()), window(window), imageCount(imageCount), vsync(vsync), currentFrame(0), currentImage(0) {
+        auto vkInstance = instance->GetVkInstance();
         VkSurfaceKHR tmpSurface;
-        if(!SDL_Vulkan_CreateSurface(window, instance, &tmpSurface)) {
+        if(!SDL_Vulkan_CreateSurface(window, vkInstance, &tmpSurface)) {
             throw CVulkanSwapchainCreationException(EVulkanSwapchainCreationError::SURFACE_CREATION_FAILED);
         }
-        surface = vk::UniqueSurfaceKHR(tmpSurface, instance);
+        surface = vk::UniqueSurfaceKHR(tmpSurface, vkInstance);
 
         if(!physicalDevice.getSurfaceSupportKHR(0, *surface)) {
             throw CVulkanSwapchainCreationException(EVulkanSwapchainCreationError::SURFACE_PRESENTATION_NOT_SUPPORTED);
@@ -74,12 +67,12 @@ public:
         createImageViews();
 
         for(uint8_t i = 0; i < imageCount; i++) {
-            acquireFences.push_back(device.createFenceUnique(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled)));
+            acquireFences.push_back(this->device.createFenceUnique(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled)));
         }
 
         for(uint8_t i = 0; i < imageCount; i++) {
-            acquireSemaphores.push_back(device.createSemaphoreUnique({}));
-            submitSemaphores.push_back(device.createSemaphoreUnique({}));
+            acquireSemaphores.push_back(this->device.createSemaphoreUnique({}));
+            submitSemaphores.push_back(this->device.createSemaphoreUnique({}));
         }
     }
 
@@ -153,8 +146,8 @@ public:
         return capabilities;
     }
 
-    vk::SurfaceFormatKHR GetVkSurfaceFormat() {
-        return surfaceFormat;
+    vk::Format GetVkSurfaceFormat() {
+        return surfaceFormat.format;
     }
 
     vk::PresentModeKHR GetVkPresentMode() {

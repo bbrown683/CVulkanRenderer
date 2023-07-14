@@ -1,47 +1,15 @@
 module;
 #include "platform/vulkan.hpp"
+#include "platform/imgui/imgui_impl_vulkan.h"
 export module cmd;
 import <optional>;
-import swapchain;
-
-export class CVulkanCommandPool {
-    vk::Device device;
-    vk::UniqueCommandPool commandPool;
-public:
-    CVulkanCommandPool() = default;
-    CVulkanCommandPool(vk::Device device, uint32_t queueFamilyIndex, vk::CommandPoolCreateFlags flags = {}) : device(device) {
-        commandPool = device.createCommandPoolUnique(vk::CommandPoolCreateInfo(flags, queueFamilyIndex));
-    }
-
-    void Reset() {
-        device.waitIdle();
-        device.resetCommandPool(*commandPool);
-    }
-
-    vk::CommandPool GetVkCommandPool() {
-        return *commandPool;
-    }
-};
-
-// Data that can be passed into a draw call.
-export struct CVulkanRender {
-    vk::Pipeline pipeline;
-    std::vector<vk::RenderingAttachmentInfo> colorAttachments;
-    std::vector<vk::RenderingAttachmentInfo> depthAttachments;
-    std::vector<vk::RenderingAttachmentInfo> stencilAttachments;
-    uint32_t verticesCount;
-    std::vector<vk::Buffer> vertexBuffers; 
-    std::vector<vk::DeviceSize> vertexBufferOffsets;
-    uint32_t indicesCount;
-    vk::Buffer indexBuffer;
-    vk::DeviceSize indexBufferOffset;
-};
+import buffer;
+import types;
 
 export class CVulkanCommandBuffer {
     vk::Device device;
     vk::UniqueCommandBuffer commandBuffer;
 public:
-    CVulkanCommandBuffer() = default;
     CVulkanCommandBuffer(vk::Device device, vk::CommandPool commandPool, vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary) : device(device) {
         auto commandBufferInfo = vk::CommandBufferAllocateInfo(commandPool, level, 1);
         commandBuffer = std::move(device.allocateCommandBuffersUnique(commandBufferInfo).front());
@@ -99,11 +67,9 @@ public:
         End();
     }
 
-    void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::BufferCopy regions) {
+    void CopyBuffer(CVulkanBuffer* srcBuffer, CVulkanBuffer* dstBuffer, vk::BufferCopy regions) {
         Begin();
-
-        commandBuffer->copyBuffer(srcBuffer, dstBuffer, regions);
-    
+        commandBuffer->copyBuffer(srcBuffer->GetVkBuffer(), dstBuffer->GetVkBuffer(), regions);
         End();
     }
 
@@ -111,6 +77,17 @@ public:
         commandBuffer->executeCommands(commandBuffers);
     }
 
+    void UploadImguiFonts() {
+        Begin();
+        ImGui_ImplVulkan_CreateFontsTexture(*commandBuffer);
+        End();
+    }
+
+    vk::CommandBuffer GetVkCommandBuffer() {
+        return *commandBuffer;
+    }
+
+private:
     void Begin() {
         commandBuffer->begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
     }
@@ -118,12 +95,26 @@ public:
     void End() {
         commandBuffer->end();
     }
+};
 
-    void Reset() {
-        commandBuffer->reset();
+export class CVulkanCommandPool {
+    vk::Device device;
+    vk::UniqueCommandPool commandPool;
+public:
+    CVulkanCommandPool(vk::Device device, uint32_t queueFamilyIndex, vk::CommandPoolCreateFlags flags = {}) : device(device) {
+        commandPool = device.createCommandPoolUnique(vk::CommandPoolCreateInfo(flags, queueFamilyIndex));
     }
 
-    vk::CommandBuffer GetVkCommandBuffer() {
-        return *commandBuffer;
+    void Reset() {
+        device.waitIdle();
+        device.resetCommandPool(*commandPool);
+    }
+
+    CVulkanCommandBuffer CreateCommandBuffer(vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary) {
+        return CVulkanCommandBuffer(device, *commandPool, level);
+    }
+
+    vk::CommandPool GetVkCommandPool() {
+        return *commandPool;
     }
 };

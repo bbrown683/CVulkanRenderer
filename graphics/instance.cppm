@@ -4,6 +4,7 @@ module;
 export module instance;
 import <vector>;
 import loader;
+import device;
 
 export class CVulkanInstance {
     vk::UniqueInstance instance;
@@ -16,7 +17,6 @@ export class CVulkanInstance {
     std::vector<vk::ExtensionProperties> availableExtensions;
     std::vector<const char*> enabledExtensions;
 public:
-    CVulkanInstance() = default;
     CVulkanInstance(SDL_Window* window) {
         unsigned int extension_count;
         if(!SDL_Vulkan_GetInstanceExtensions(window, &extension_count, nullptr)) {
@@ -107,5 +107,20 @@ public:
 
     std::vector<const char*> GetEnabledExtensionProperties() {
         return enabledExtensions;
+    }
+
+    std::unique_ptr<CVulkanDevice> CreateDevice() {
+        return std::make_unique<CVulkanDevice>(SelectPrimaryPhysicalDevice(physicalDevices));
+    }
+
+private:
+    vk::PhysicalDevice SelectPrimaryPhysicalDevice(std::vector<vk::PhysicalDevice> physicalDevices) {
+        for(auto& physicalDevice : physicalDevices) {
+            vk::PhysicalDeviceProperties properties = physicalDevice.getProperties();
+            if(properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) {
+                return physicalDevice;
+            }
+        }
+        return physicalDevices.front();
     }
 };
