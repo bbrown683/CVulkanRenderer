@@ -13,6 +13,7 @@ import cmd;
 import pipeline;
 import mesh;
 import ui;
+import window;
 import types;
 
 export struct CVulkanRendererProperties {
@@ -55,15 +56,16 @@ export class CVulkanRenderer {
     std::unique_ptr<CVulkanQueue> computeQueue;
     std::unique_ptr<CVulkanQueue> transferQueue;
 public:
-    CVulkanRenderer(SDL_Window* window) {
-        instance = std::make_unique<CVulkanInstance>(window);
+    CVulkanRenderer(CSDLWindow* window) {
+        window->AddEventCallback(static_cast<void*>(this), SDL_EventFilterCallback); // Add callback when certain events fire.
+
+        instance = std::make_unique<CVulkanInstance>(window->GetSDL_Window());
         device = instance->CreateDevice();
+        graphicsQueue = device->GetGraphicsQueue();
+        computeQueue = device->GetComputeQueue();
+        transferQueue = device->GetTransferQueue();
 
-        graphicsQueue = std::make_unique<CVulkanQueue>(device->GetGraphicsQueue());
-        computeQueue = std::make_unique<CVulkanQueue>(device->GetComputeQueue());
-        transferQueue = std::make_unique<CVulkanQueue>(device->GetTransferQueue());
-
-        swapchain = std::make_unique<CVulkanSwapchain>(instance.get(), device.get(), graphicsQueue.get(), window, 2, true);
+        swapchain = std::make_unique<CVulkanSwapchain>(instance.get(), device.get(), graphicsQueue.get(), window->GetSDL_Window(), 2, true);
 
         graphicsCommandPool = std::make_unique<CVulkanCommandPool>(graphicsQueue->CreateCommandPool());
         computeCommandPool = std::make_unique<CVulkanCommandPool>(computeQueue->CreateCommandPool());
@@ -80,9 +82,9 @@ public:
         pipeline = std::make_unique<CVulkanGraphicsPipeline>(device->CreateGraphicsPipeline("vertex.spv", "fragment.spv", surfaceFormat));
 
         meshRenderer = std::make_unique<CVulkanMeshRenderer>(pipeline.get(), graphicsCommandBuffers);
-        meshLoader = std::make_unique<CVulkanMeshLoader>(device.get(), transferQueue.get(), transferCommandPool.get(), transferCommandBuffers[0].get());
+        meshLoader = std::make_unique<CVulkanMeshLoader>(device.get(), transferQueue.get(), transferCommandPool.get(), transferCommandBuffers[0]);
         meshes.push_back(std::make_shared<CVulkanMesh>(meshLoader->Load(vertices, indices)));
-        ui = std::make_unique<CVulkanUi>(window, instance.get(), device.get(), graphicsQueue.get(), graphicsCommandBuffers[0].get(), 2, surfaceFormat);
+        ui = std::make_unique<CVulkanUi>(window->GetSDL_Window(), instance.get(), device.get(), graphicsQueue.get(), graphicsCommandPool.get(), graphicsCommandBuffers, 2, surfaceFormat);
     }
 
     void OnResize() {
@@ -92,8 +94,18 @@ public:
     void DrawFrame() {
         CVulkanFrame frame = swapchain->GetNextFrame();
         graphicsCommandPool->Reset();
-        meshRenderer->Render(frame, meshes);
-        graphicsQueue->Submit(graphicsCommandBuffers[frame.currentFrame].get(), frame.submitSemaphore, frame.acquireSemaphore, vk::PipelineStageFlagBits::eColorAttachmentOutput, frame.acquireFence);
+        CVulkanRender render;
+        render.colorAttachments = { vk::RenderingAttachmentInfo(frame.imageView, vk::ImageLayout::eColorAttachmentOptimal,
+                                                    vk::ResolveModeFlagBits::eNone, nullptr, vk::ImageLayout::eUndefined,
+                                                    vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+                                                    vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)) };
+
+        auto currentCommandBuffer = graphicsCommandBuffers[frame.currentFrame];
+        currentCommandBuffer->BeginRender(frame, render);
+        meshRenderer->Draw(frame, meshes);
+        ui->Draw(frame);
+        currentCommandBuffer->EndRender(frame);
+        graphicsQueue->Submit(currentCommandBuffer, frame.submitSemaphore, frame.acquireSemaphore, vk::PipelineStageFlagBits::eColorAttachmentOutput, frame.acquireFence);
         swapchain->Present();
     }
 

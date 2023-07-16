@@ -178,7 +178,7 @@ private:
         capabilities = physicalDevice.getSurfaceCapabilitiesKHR(*surface);
         auto extent = GetSwapchainExtent(window, capabilities);
         presentMode = SelectPresentMode(physicalDevice.getSurfacePresentModesKHR(*surface), vsync ? vk::PresentModeKHR::eImmediate : vk::PresentModeKHR::eMailbox);
-        surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Srgb, vk::ColorSpaceKHR::eSrgbNonlinear);
+        surfaceFormat = SelectSurfaceFormat(physicalDevice.getSurfaceFormatsKHR(*surface), vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eExtendedSrgbLinearEXT);
 
         vk::SwapchainCreateInfoKHR swapchainInfo;
         swapchainInfo.setSurface(*surface);

@@ -8,22 +8,16 @@ export class CVulkanQueue {
     vk::Queue queue;
     uint32_t familyIndex;
     std::vector<vk::UniqueSemaphore> submitSemaphores;
-    friend class CVulkanQueueDeleter;
 public:
     CVulkanQueue(vk::Device device, uint32_t familyIndex) : device(device), familyIndex(familyIndex) {
         queue = device.getQueue(familyIndex, 0);
     }
 
-    CVulkanQueue(const CVulkanQueue&) = default;
-    CVulkanQueue(CVulkanQueue&&) = default;
-    CVulkanQueue& operator=(const CVulkanQueue&) = default;
-    CVulkanQueue& operator=(CVulkanQueue&&) = default;
-
     ~CVulkanQueue() {
         queue.waitIdle();
     }
 
-    void Submit(CVulkanCommandBuffer* commandBuffer, vk::Semaphore submitSemaphore = nullptr, vk::Semaphore waitSemaphore = nullptr, vk::PipelineStageFlags waitSemaphoreFlags = {}, vk::Fence signalFence = nullptr) {
+    void Submit(std::shared_ptr<CVulkanCommandBuffer> commandBuffer, vk::Semaphore submitSemaphore = nullptr, vk::Semaphore waitSemaphore = nullptr, vk::PipelineStageFlags waitSemaphoreFlags = {}, vk::Fence signalFence = nullptr) {
         vk::SubmitInfo submitInfo;
         std::vector<vk::PipelineStageFlags> waitSemaphoreDestinationFlags = {};
         auto vkCommandBuffer = commandBuffer->GetVkCommandBuffer();

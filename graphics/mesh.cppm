@@ -41,9 +41,9 @@ export class CVulkanMeshLoader {
     CVulkanDevice* device;
     CVulkanQueue* queue;
     CVulkanCommandPool* commandPool;
-    CVulkanCommandBuffer* commandBuffer;
+    std::shared_ptr<CVulkanCommandBuffer> commandBuffer;
 public:
-    CVulkanMeshLoader(CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandPool* commandPool, CVulkanCommandBuffer* commandBuffer)
+    CVulkanMeshLoader(CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandPool* commandPool, std::shared_ptr<CVulkanCommandBuffer> commandBuffer)
         : device(device), queue(queue), commandPool(commandPool), commandBuffer(commandBuffer) {}
 
     std::vector<CVulkanMesh> Load(std::string filename) {
@@ -86,28 +86,17 @@ public:
     CVulkanMeshRenderer(CVulkanGraphicsPipeline* pipeline, std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers) 
         : pipeline(pipeline), commandBuffers(commandBuffers) {}
 
-    void Render(CVulkanFrame frame, std::vector<std::shared_ptr<CVulkanMesh>> meshes) {
-        CVulkanRender render;
-        render.colorAttachments = { vk::RenderingAttachmentInfo(frame.imageView, vk::ImageLayout::eColorAttachmentOptimal,
-                                                            vk::ResolveModeFlagBits::eNone, nullptr, vk::ImageLayout::eUndefined,
-                                                            vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-                                                           vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)) };
-        /*
-        render.setDepthAttachments = { vk::RenderingAttachmentInfo({}, vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                                                                     vk::ResolveModeFlagBits::eNone, {}, vk::ImageLayout::eUndefined,
-                                                                     vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-                                                                     vk::ClearDepthStencilValue(1.0f, 0)) };
-        */
-        render.pipeline = pipeline->GetVkPipeline();
-
+    void Draw(CVulkanFrame frame, std::vector<std::shared_ptr<CVulkanMesh>> meshes) {
+        CVulkanDraw draw;
+        draw.pipeline = pipeline->GetVkPipeline();
         for(auto& mesh : meshes) {
-            render.verticesCount = static_cast<uint32_t>(mesh->vertices.size());
-            render.vertexBuffers = { mesh->vertexBuffer->GetVkBuffer() };
-            render.vertexBufferOffsets = { 0 };
-            render.indicesCount = static_cast<uint32_t>(mesh->indices.size());
-            render.indexBuffer = mesh->indexBuffer->GetVkBuffer();
-            render.indexBufferOffset = 0;
-            commandBuffers[frame.currentFrame]->Render(frame, render);
+            draw.verticesCount = static_cast<uint32_t>(mesh->vertices.size());
+            draw.vertexBuffers = { mesh->vertexBuffer->GetVkBuffer() };
+            draw.vertexBufferOffsets = { 0 };
+            draw.indicesCount = static_cast<uint32_t>(mesh->indices.size());
+            draw.indexBuffer = mesh->indexBuffer->GetVkBuffer();
+            draw.indexBufferOffset = 0;
+            commandBuffers[frame.currentFrame]->Draw(draw);
         }
     }
 };

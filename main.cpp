@@ -3,8 +3,7 @@ import renderer;
 
 auto main() -> int {
     CSDLWindow window(1920, 1080);
-    CVulkanRenderer renderer(window.GetSDL_Window());
-    window.AddEventCallback(static_cast<void*>(&renderer), CVulkanRenderer::SDL_EventFilterCallback); // Add callback when certain events fire.
+    CVulkanRenderer renderer(&window);
 
     while(window.IsRunning()) {
         window.PollEvents();

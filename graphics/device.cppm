@@ -21,7 +21,6 @@ export class CVulkanDevice {
     uint32_t graphicsQueueIndex;
     uint32_t computeQueueIndex;
     uint32_t transferQueueIndex;
-    friend class CVulkanDeviceDeleter;
 public:
     CVulkanDevice(vk::PhysicalDevice physicalDevice) : physicalDevice(physicalDevice) {
         availableLayers = physicalDevice.enumerateDeviceLayerProperties();
@@ -115,16 +114,16 @@ public:
         return enabledExtensions;
     }
 
-    CVulkanQueue GetGraphicsQueue() {
-        return CVulkanQueue(*device, graphicsQueueIndex);
+    std::unique_ptr<CVulkanQueue> GetGraphicsQueue() {
+        return std::make_unique<CVulkanQueue>(*device, graphicsQueueIndex);
     }
 
-    CVulkanQueue GetComputeQueue() {
-        return CVulkanQueue(*device, computeQueueIndex);
+    std::unique_ptr<CVulkanQueue> GetComputeQueue() {
+        return std::make_unique<CVulkanQueue>(*device, computeQueueIndex);
     }
 
-    CVulkanQueue GetTransferQueue() {
-        return CVulkanQueue(*device, transferQueueIndex);
+    std::unique_ptr<CVulkanQueue> GetTransferQueue() {
+        return std::make_unique<CVulkanQueue>(*device, transferQueueIndex);
     }
 
     CVulkanGraphicsPipeline CreateGraphicsPipeline(std::string vertexShaderFile, std::string fragmentShaderFile, vk::Format colorFormat) {

@@ -14,12 +14,17 @@ export struct CVulkanFrame {
     vk::Semaphore submitSemaphore;
 };
 
-// Data that can be passed into a draw call.
+// Data that can be passed for rendering settings.
 export struct CVulkanRender {
-    vk::Pipeline pipeline;
     std::vector<vk::RenderingAttachmentInfo> colorAttachments;
     std::vector<vk::RenderingAttachmentInfo> depthAttachments;
     std::vector<vk::RenderingAttachmentInfo> stencilAttachments;
+
+};
+
+// Data passed in for draw settings.
+export struct CVulkanDraw {
+    vk::Pipeline pipeline;
     uint32_t verticesCount;
     std::vector<vk::Buffer> vertexBuffers;
     std::vector<vk::DeviceSize> vertexBufferOffsets;

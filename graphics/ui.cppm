@@ -8,13 +8,19 @@ export module ui;
 import instance;
 import device;
 import queue;
+import pipeline;
 import cmd;
+import types;
 
 export class CVulkanUi {
     vk::UniqueDescriptorPool descriptorPool;
     vk::UniquePipelineCache pipelineCache;
+    std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers;
 public:
-    CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandBuffer* commandBuffer, uint32_t imageCount, vk::Format colorFormat) {
+    CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevice* device, CVulkanQueue* queue, 
+              CVulkanCommandPool* commandPool, std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers, 
+              uint32_t imageCount, vk::Format colorFormat)
+            : commandBuffers(commandBuffers) {
         auto vkInstance = instance->GetVkInstance();
         auto vkPhysicalDevice = device->GetVkPhysicalDevice();
         auto vkDevice = device->GetVkDevice();
@@ -50,8 +56,8 @@ public:
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-
-
+        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
         ImGui_ImplVulkan_InitInfo imguiVulkanInitInfo;
         imguiVulkanInitInfo.Instance = vkInstance;
@@ -68,35 +74,40 @@ public:
         imguiVulkanInitInfo.CheckVkResultFn = nullptr;
         imguiVulkanInitInfo.Allocator = nullptr;
         imguiVulkanInitInfo.UseDynamicRendering = true;
-        imguiVulkanInitInfo.ColorAttachmentFormat = static_cast<VkFormat>(colorFormat);
+        imguiVulkanInitInfo.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_UNORM;
 
         if(!ImGui_ImplSDL2_InitForVulkan(window) || !ImGui_ImplVulkan_Init(&imguiVulkanInitInfo, nullptr)) {
             printf("CVulkanUi::CVulkanUi: Failed to initialize ImGui");
         }
 
-        commandBuffer->UploadImguiFonts();
-        queue->Submit(commandBuffer);
+        commandBuffers[0]->UploadImguiFonts();
+        queue->Submit(commandBuffers[0]);
         ImGui_ImplVulkan_DestroyFontUploadObjects();
+        commandPool->Reset();
     }
 
     ~CVulkanUi() {
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
     }
 
-    ImDrawData* GetState() {
+    void Draw(CVulkanFrame frame) {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
         bool showDemoWindow = true;
         ImGui::ShowDemoWindow(&showDemoWindow);
-
         ImGui::Render();
-        return ImGui::GetDrawData();
+        ImDrawData* drawData = ImGui::GetDrawData();
+        commandBuffers[frame.currentFrame]->Draw(drawData);
+
+        ImGuiIO& io = ImGui::GetIO();
+        // Update and Render additional Platform Windows
+        if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+        }
     }
-};
-
-export class CVulkanUiRenderer {
-
 };
