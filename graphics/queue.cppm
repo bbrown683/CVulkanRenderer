@@ -1,6 +1,7 @@
 module;
 #include "platform/vulkan.hpp"
 export module queue;
+import <vector>;
 import cmd;
 
 export class CVulkanQueue {

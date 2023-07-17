@@ -9,6 +9,7 @@ import instance;
 import device;
 import queue;
 import pipeline;
+import image;
 import cmd;
 import types;
 
@@ -16,6 +17,7 @@ export class CVulkanUi {
     vk::UniqueDescriptorPool descriptorPool;
     vk::UniquePipelineCache pipelineCache;
     std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers;
+
 public:
     CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevice* device, CVulkanQueue* queue, 
               CVulkanCommandPool* commandPool, std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers, 
@@ -55,9 +57,8 @@ public:
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+
+        io.Fonts->AddFontFromFileTTF("Roboto-Bold.ttf", 16.0f);
 
         ImGui_ImplVulkan_InitInfo imguiVulkanInitInfo;
         imguiVulkanInitInfo.Instance = vkInstance;
@@ -74,7 +75,7 @@ public:
         imguiVulkanInitInfo.CheckVkResultFn = nullptr;
         imguiVulkanInitInfo.Allocator = nullptr;
         imguiVulkanInitInfo.UseDynamicRendering = true;
-        imguiVulkanInitInfo.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_UNORM;
+        imguiVulkanInitInfo.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
         if(!ImGui_ImplSDL2_InitForVulkan(window) || !ImGui_ImplVulkan_Init(&imguiVulkanInitInfo, nullptr)) {
             printf("CVulkanUi::CVulkanUi: Failed to initialize ImGui");
@@ -92,22 +93,60 @@ public:
         ImGui::DestroyContext();
     }
 
-    void Draw(CVulkanFrame frame) {
+    vk::Extent2D Draw(CVulkanFrame* frame) {
+        vk::Extent2D viewportExtent;
+
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
+        if(ImGui::BeginMainMenuBar()) {
+            if(ImGui::BeginMenu("File")) {
+                ImGui::MenuItem("New");
+                ImGui::MenuItem("Open");
+                ImGui::Separator();
+                ImGui::MenuItem("Save");
+                ImGui::MenuItem("Save As");
+                ImGui::Separator();
+                ImGui::MenuItem("Import");
+                ImGui::MenuItem("Export");
+                ImGui::Separator();
+                ImGui::MenuItem("Quit");
+                ImGui::EndMenu();
+            }
+
+            if(ImGui::BeginMenu("Edit")) {
+                ImGui::MenuItem("Undo");
+                ImGui::MenuItem("Redo");
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
+        }
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        if(ImGui::Begin("Renderer")) {
+            ImVec2 viewport = ImGui::GetContentRegionAvail();
+            viewportExtent = vk::Extent2D { static_cast<uint32_t>(viewport.x), static_cast<uint32_t>(viewport.y) };
+
+            ImGui::End();
+        }
+
+        if(ImGui::Begin("Scene")) {
+            ImGui::End();
+        }
+
+        if(ImGui::Begin("Properties")) {
+            ImGui::End();
+        }
+
         bool showDemoWindow = true;
         ImGui::ShowDemoWindow(&showDemoWindow);
         ImGui::Render();
-        ImDrawData* drawData = ImGui::GetDrawData();
-        commandBuffers[frame.currentFrame]->Draw(drawData);
-
-        ImGuiIO& io = ImGui::GetIO();
-        // Update and Render additional Platform Windows
-        if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
+        if(frame != nullptr) {
+            ImDrawData* drawData = ImGui::GetDrawData();
+            commandBuffers[frame->currentFrame]->Draw(drawData);
         }
+        return viewportExtent;
     }
 };

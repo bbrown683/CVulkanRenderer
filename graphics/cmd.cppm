@@ -2,8 +2,9 @@ module;
 #include "platform/vulkan.hpp"
 #include "platform/imgui/imgui_impl_vulkan.h"
 export module cmd;
-import <optional>;
+import <vector>;
 import buffer;
+import image;
 import types;
 
 export class CVulkanCommandBuffer {
@@ -15,58 +16,58 @@ public:
         commandBuffer = std::move(device.allocateCommandBuffersUnique(commandBufferInfo).front());
     }
 
-    void BeginRender(CVulkanFrame frame, CVulkanRender render) {
-        Begin();
-
+    void TransitionImageLayout(vk::Image image, vk::AccessFlags srcAccessFlags, vk::AccessFlags dstAccessFlags, 
+                                  vk::ImageLayout oldLayout, vk::ImageLayout newLayout, 
+                                  vk::PipelineStageFlags srcStage, vk::PipelineStageFlags dstStage) {
         // Transition image for drawing.
-        vk::ImageMemoryBarrier colorAttachmentBarrier;
-        colorAttachmentBarrier.setImage(frame.image);
-        colorAttachmentBarrier.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
-        colorAttachmentBarrier.setOldLayout(vk::ImageLayout::eUndefined);
-        colorAttachmentBarrier.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal);
-        colorAttachmentBarrier.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
+        vk::ImageMemoryBarrier pipelineBarrier;
+        pipelineBarrier.setImage(image);
+        pipelineBarrier.setSrcAccessMask(srcAccessFlags);
+        pipelineBarrier.setDstAccessMask(dstAccessFlags);
+        pipelineBarrier.setOldLayout(oldLayout);
+        pipelineBarrier.setNewLayout(newLayout);
+        pipelineBarrier.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
 
-        commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, nullptr, nullptr, colorAttachmentBarrier);
+        commandBuffer->pipelineBarrier(srcStage, dstStage, {}, nullptr, nullptr, pipelineBarrier);
+    }
 
-        vk::Rect2D renderArea({}, frame.extent);
+    void BeginPass(CVulkanFrame* frame, CVulkanRender* render) {
+        Begin();
+        TransitionImageLayout(frame->image, {}, vk::AccessFlagBits::eColorAttachmentWrite, 
+                              vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 
+                              vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput);
+
+        vk::Rect2D renderArea({}, frame->extent);
         vk::RenderingInfo renderingInfo;
         renderingInfo.setRenderArea(renderArea);
         renderingInfo.setLayerCount(1);
-        renderingInfo.setColorAttachments(render.colorAttachments);
-        renderingInfo.setPDepthAttachment(render.depthAttachments.data());
-        renderingInfo.setPStencilAttachment(render.stencilAttachments.data());
+        renderingInfo.setColorAttachments(render->colorAttachments);
+        renderingInfo.setPDepthAttachment(render->depthAttachments.data());
+        renderingInfo.setPStencilAttachment(render->stencilAttachments.data());
 
         commandBuffer->beginRendering(renderingInfo);
 
-        vk::Viewport viewport(0.0f, 0.0f, static_cast<float>(frame.extent.width), static_cast<float>(frame.extent.height), 0.0f, 1.0f);
+        vk::Viewport viewport(0.0f, 0.0f, static_cast<float>(frame->extent.width), static_cast<float>(frame->extent.height), 0.0f, 1.0f);
         commandBuffer->setViewport(0, viewport);
         commandBuffer->setScissor(0, renderArea);
     }
 
-    void EndRender(CVulkanFrame frame) {
+    void EndPass(CVulkanFrame* frame) {
         commandBuffer->endRendering();
-
-        // Transition image for presentation.
-        vk::ImageMemoryBarrier presentImageBarrier;
-        presentImageBarrier.setImage(frame.image);
-        presentImageBarrier.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
-        presentImageBarrier.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal);
-        presentImageBarrier.setNewLayout(vk::ImageLayout::ePresentSrcKHR);
-        presentImageBarrier.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
-
-        commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe, {}, nullptr, nullptr, presentImageBarrier);
-
+        TransitionImageLayout(frame->image, vk::AccessFlagBits::eColorAttachmentWrite, {}, 
+                              vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::ePresentSrcKHR, 
+                              vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe);
         End();
     }
 
-    void Draw(CVulkanDraw draw) {
-        commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, draw.pipeline);
-        commandBuffer->bindVertexBuffers(0, draw.vertexBuffers, draw.vertexBufferOffsets);
-        if(draw.indicesCount > 0) {
-            commandBuffer->bindIndexBuffer(draw.indexBuffer, draw.indexBufferOffset, vk::IndexType::eUint16);
-            commandBuffer->drawIndexed(draw.indicesCount, 1, 0, 0, 0);
+    void Draw(CVulkanDraw* draw) {
+        commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, draw->pipeline);
+        commandBuffer->bindVertexBuffers(0, draw->vertexBuffers, draw->vertexBufferOffsets);
+        if(draw->indicesCount > 0) {
+            commandBuffer->bindIndexBuffer(draw->indexBuffer, draw->indexBufferOffset, vk::IndexType::eUint16);
+            commandBuffer->drawIndexed(draw->indicesCount, 1, 0, 0, 0);
         } else {
-            commandBuffer->draw(draw.verticesCount, 1, 0, 0);
+            commandBuffer->draw(draw->verticesCount, 1, 0, 0);
         }
     }
 
@@ -74,63 +75,15 @@ public:
         ImGui_ImplVulkan_RenderDrawData(drawData, *commandBuffer);
     }
 
-    /*
-    void Render(CVulkanFrame frame, CVulkanRender render) {
-        Begin();
-
-        // Transition image for drawing.
-        vk::ImageMemoryBarrier colorAttachmentBarrier;
-        colorAttachmentBarrier.setImage(frame.image);
-        colorAttachmentBarrier.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
-        colorAttachmentBarrier.setOldLayout(vk::ImageLayout::eUndefined);
-        colorAttachmentBarrier.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal);
-        colorAttachmentBarrier.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
-
-        commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, nullptr, nullptr, colorAttachmentBarrier);
-
-        vk::Rect2D renderArea({}, frame.extent);
-        vk::RenderingInfo renderingInfo;
-        renderingInfo.setRenderArea(renderArea);
-        renderingInfo.setLayerCount(1);
-        renderingInfo.setColorAttachments(render.colorAttachments);
-        renderingInfo.setPDepthAttachment(render.depthAttachments.data());
-        renderingInfo.setPStencilAttachment(render.stencilAttachments.data());
-
-        commandBuffer->beginRendering(renderingInfo);
-
-        vk::Viewport viewport(0.0f, 0.0f, static_cast<float>(frame.extent.width), static_cast<float>(frame.extent.height), 0.0f, 1.0f);
-        commandBuffer->setViewport(0, viewport);
-        commandBuffer->setScissor(0, renderArea);
-
-        commandBuffer->bindPipeline(vk::PipelineBindPoint::eGraphics, render.pipeline);
-        commandBuffer->bindVertexBuffers(0, render.vertexBuffers, render.vertexBufferOffsets);
-
-        if(render.indicesCount > 0) {
-            commandBuffer->bindIndexBuffer(render.indexBuffer, render.indexBufferOffset, vk::IndexType::eUint16);
-            commandBuffer->drawIndexed(render.indicesCount, 1, 0, 0, 0);
-        } else {
-            commandBuffer->draw(render.verticesCount, 1, 0, 0);
-        }
-        
-        commandBuffer->endRendering();
-
-        // Transition image for presentation.
-        vk::ImageMemoryBarrier presentImageBarrier;
-        presentImageBarrier.setImage(frame.image);
-        presentImageBarrier.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
-        presentImageBarrier.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal);
-        presentImageBarrier.setNewLayout(vk::ImageLayout::ePresentSrcKHR);
-        presentImageBarrier.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
-
-        commandBuffer->pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eBottomOfPipe, {}, nullptr, nullptr, presentImageBarrier);
-
-        End();
-    }
-    */
-
     void CopyBuffer(CVulkanBuffer* srcBuffer, CVulkanBuffer* dstBuffer, vk::BufferCopy regions) {
         Begin();
         commandBuffer->copyBuffer(srcBuffer->GetVkBuffer(), dstBuffer->GetVkBuffer(), regions);
+        End();
+    }
+
+    void CopyImage(CVulkanImage* srcImage, CVulkanImage* dstImage, vk::ImageCopy regions) {
+        Begin();
+        commandBuffer->copyImage(srcImage->GetVkImage(), vk::ImageLayout::eColorAttachmentOptimal, dstImage->GetVkImage(), vk::ImageLayout::eColorAttachmentOptimal, regions);
         End();
     }
 

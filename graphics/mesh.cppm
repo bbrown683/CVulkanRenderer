@@ -8,7 +8,7 @@ import cmd;
 import queue;
 import pipeline;
 import buffer;
-import texture;
+import image;
 import pipeline;
 import types;
 
@@ -86,7 +86,7 @@ public:
     CVulkanMeshRenderer(CVulkanGraphicsPipeline* pipeline, std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers) 
         : pipeline(pipeline), commandBuffers(commandBuffers) {}
 
-    void Draw(CVulkanFrame frame, std::vector<std::shared_ptr<CVulkanMesh>> meshes) {
+    void Draw(CVulkanFrame* frame, std::vector<std::shared_ptr<CVulkanMesh>> meshes) {
         CVulkanDraw draw;
         draw.pipeline = pipeline->GetVkPipeline();
         for(auto& mesh : meshes) {
@@ -96,7 +96,7 @@ public:
             draw.indicesCount = static_cast<uint32_t>(mesh->indices.size());
             draw.indexBuffer = mesh->indexBuffer->GetVkBuffer();
             draw.indexBufferOffset = 0;
-            commandBuffers[frame.currentFrame]->Draw(draw);
+            commandBuffers[frame->currentFrame]->Draw(&draw);
         }
     }
 };

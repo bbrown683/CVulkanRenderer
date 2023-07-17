@@ -32,7 +32,7 @@
     <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\buffer.cppm" />
     <ClCompile Include="graphics\mesh.cppm" />
-    <ClCompile Include="graphics\texture.cppm" />
+    <ClCompile Include="graphics\image.cppm" />
     <ClCompile Include="graphics\camera.cppm" />
     <ClCompile Include="graphics\platform\imgui\imgui.cpp">
       <Filter>Source Files</Filter>

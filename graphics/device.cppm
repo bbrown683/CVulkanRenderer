@@ -1,10 +1,11 @@
 module;
 #include "platform/vulkan.hpp"
 export module device;
-import <algorithm>;
+import <vector>;
 import loader;
 import queue;
 import buffer;
+import image;
 import pipeline;
 
 export class CVulkanDevice {
@@ -132,5 +133,9 @@ public:
 
     CVulkanBuffer CreateBuffer(vk::MemoryPropertyFlags desiredPropertyFlags, vk::BufferUsageFlags usage, void* data, vk::DeviceSize dataSize) {
         return CVulkanBuffer(*device, memoryProperties, desiredPropertyFlags, usage, data, dataSize);
+    }
+
+    CVulkanImage CreateImage(uint16_t width, uint16_t height, vk::Format format) {
+        return CVulkanImage(*device, memoryProperties, vk::Extent3D(width, height), format);
     }
 };

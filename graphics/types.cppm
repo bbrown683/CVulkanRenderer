@@ -9,6 +9,8 @@ export struct CVulkanFrame {
     vk::Extent2D extent;
     vk::Image image;
     vk::ImageView imageView;
+    vk::Image viewportImage;
+    vk::ImageView viewportImageView;
     vk::Fence acquireFence;
     vk::Semaphore acquireSemaphore;
     vk::Semaphore submitSemaphore;

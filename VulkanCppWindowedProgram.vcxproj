@@ -23,6 +23,7 @@
     <ProjectGuid>{b6968702-b803-49f6-827e-6c29790e1464}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>VulkanCppWindowedProgram</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -104,7 +105,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <EnableModules>true</EnableModules>
       <CompileAs>Default</CompileAs>
@@ -192,7 +193,7 @@
     <ClCompile Include="graphics\renderer.cppm" />
     <ClCompile Include="graphics\pipeline.cppm" />
     <ClCompile Include="graphics\swapchain.cppm" />
-    <ClCompile Include="graphics\texture.cppm" />
+    <ClCompile Include="graphics\image.cppm" />
     <ClCompile Include="graphics\window.cppm" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

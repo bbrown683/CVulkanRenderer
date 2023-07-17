@@ -9,6 +9,7 @@ import device;
 import queue;
 import swapchain;
 import buffer;
+import image;
 import cmd;
 import pipeline;
 import mesh;
@@ -43,14 +44,15 @@ export class CVulkanRenderer {
     std::unique_ptr<CVulkanCommandPool> transferCommandPool;
 
     std::unique_ptr<CVulkanUi> ui;
+    std::unique_ptr<CVulkanImage> viewportImage;
 
     std::unique_ptr<CVulkanMeshRenderer> meshRenderer;
     std::unique_ptr<CVulkanMeshLoader> meshLoader;
     std::vector<std::shared_ptr<CVulkanMesh>> meshes;
 
     std::vector<std::shared_ptr<CVulkanCommandBuffer>> graphicsCommandBuffers;
-    std::vector<std::shared_ptr<CVulkanCommandBuffer>> computeCommandBuffers;
-    std::vector<std::shared_ptr<CVulkanCommandBuffer>> transferCommandBuffers;
+    std::shared_ptr<CVulkanCommandBuffer> computeCommandBuffer;
+    std::shared_ptr<CVulkanCommandBuffer> transferCommandBuffer;
 
     std::unique_ptr<CVulkanQueue> graphicsQueue;
     std::unique_ptr<CVulkanQueue> computeQueue;
@@ -75,16 +77,17 @@ public:
             graphicsCommandBuffers.push_back(std::make_shared<CVulkanCommandBuffer>(graphicsCommandPool->CreateCommandBuffer()));
         }
 
-        computeCommandBuffers.push_back(std::make_shared<CVulkanCommandBuffer>(computeCommandPool->CreateCommandBuffer()));
-        transferCommandBuffers.push_back(std::make_shared<CVulkanCommandBuffer>(transferCommandPool->CreateCommandBuffer()));
+        computeCommandBuffer = std::make_shared<CVulkanCommandBuffer>(computeCommandPool->CreateCommandBuffer());
+        transferCommandBuffer = std::make_shared<CVulkanCommandBuffer>(transferCommandPool->CreateCommandBuffer());
 
         auto surfaceFormat = swapchain->GetVkSurfaceFormat();
         pipeline = std::make_unique<CVulkanGraphicsPipeline>(device->CreateGraphicsPipeline("vertex.spv", "fragment.spv", surfaceFormat));
 
         meshRenderer = std::make_unique<CVulkanMeshRenderer>(pipeline.get(), graphicsCommandBuffers);
-        meshLoader = std::make_unique<CVulkanMeshLoader>(device.get(), transferQueue.get(), transferCommandPool.get(), transferCommandBuffers[0]);
+        meshLoader = std::make_unique<CVulkanMeshLoader>(device.get(), transferQueue.get(), transferCommandPool.get(), transferCommandBuffer);
         meshes.push_back(std::make_shared<CVulkanMesh>(meshLoader->Load(vertices, indices)));
         ui = std::make_unique<CVulkanUi>(window->GetSDL_Window(), instance.get(), device.get(), graphicsQueue.get(), graphicsCommandPool.get(), graphicsCommandBuffers, 2, surfaceFormat);
+        ui->Draw(nullptr);
     }
 
     void OnResize() {
@@ -101,10 +104,13 @@ public:
                                                     vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)) };
 
         auto currentCommandBuffer = graphicsCommandBuffers[frame.currentFrame];
-        currentCommandBuffer->BeginRender(frame, render);
-        meshRenderer->Draw(frame, meshes);
-        ui->Draw(frame);
-        currentCommandBuffer->EndRender(frame);
+        currentCommandBuffer->BeginPass(&frame, &render);
+        meshRenderer->Draw(&frame, meshes);
+#ifdef _DEBUG
+        //viewportImage = std::make_unique<CVulkanImage>(device->CreateImage(surfaceFormat));
+        ui->Draw(&frame);
+#endif
+        currentCommandBuffer->EndPass(&frame);
         graphicsQueue->Submit(currentCommandBuffer, frame.submitSemaphore, frame.acquireSemaphore, vk::PipelineStageFlagBits::eColorAttachmentOutput, frame.acquireFence);
         swapchain->Present();
     }
