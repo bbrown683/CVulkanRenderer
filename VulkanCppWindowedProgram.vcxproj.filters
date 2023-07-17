@@ -19,21 +19,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\instance.cppm" />
-    <ClCompile Include="graphics\device.cppm" />
-    <ClCompile Include="graphics\queue.cppm" />
-    <ClCompile Include="graphics\loader.cppm" />
-    <ClCompile Include="graphics\window.cppm" />
-    <ClCompile Include="graphics\swapchain.cppm" />
-    <ClCompile Include="graphics\renderer.cppm" />
-    <ClCompile Include="graphics\cmd.cppm">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="graphics\pipeline.cppm" />
-    <ClCompile Include="graphics\buffer.cppm" />
-    <ClCompile Include="graphics\mesh.cppm" />
-    <ClCompile Include="graphics\image.cppm" />
-    <ClCompile Include="graphics\camera.cppm" />
     <ClCompile Include="graphics\platform\imgui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,10 +40,42 @@
     <ClCompile Include="graphics\platform\imgui\imgui_demo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\ui.cppm">
+    <ClCompile Include="graphics\ui.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\types.cppm" />
+    <ClCompile Include="graphics\buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\cmd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\instance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\queue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\swapchain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\ui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\platform\vulkan.hpp">
@@ -92,6 +109,42 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="graphics\platform\imgui\imstb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\cmd.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\instance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\device.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\queue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\renderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\pipeline.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\mesh.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\image.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\swapchain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

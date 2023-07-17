@@ -107,7 +107,7 @@
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
-      <EnableModules>true</EnableModules>
+      <EnableModules>false</EnableModules>
       <CompileAs>Default</CompileAs>
       <AdditionalModuleDependencies>%(AdditionalModuleDependencies)</AdditionalModuleDependencies>
       <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
@@ -173,15 +173,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="graphics\buffer.cppm" />
-    <ClCompile Include="graphics\camera.cppm" />
-    <ClCompile Include="graphics\cmd.cppm" />
-    <ClCompile Include="graphics\types.cppm" />
-    <ClCompile Include="graphics\ui.cppm" />
-    <ClCompile Include="graphics\instance.cppm" />
-    <ClCompile Include="graphics\loader.cppm" />
-    <ClCompile Include="graphics\device.cppm" />
-    <ClCompile Include="graphics\mesh.cppm" />
+    <ClCompile Include="graphics\buffer.cpp" />
+    <ClCompile Include="graphics\cmd.cpp" />
+    <ClCompile Include="graphics\device.cpp" />
+    <ClCompile Include="graphics\instance.cpp" />
+    <ClCompile Include="graphics\mesh.cpp" />
+    <ClCompile Include="graphics\pipeline.cpp" />
+    <ClCompile Include="graphics\queue.cpp" />
+    <ClCompile Include="graphics\renderer.cpp" />
+    <ClCompile Include="graphics\swapchain.cpp" />
+    <ClCompile Include="graphics\ui.cpp" />
     <ClCompile Include="graphics\platform\imgui\imgui.cpp" />
     <ClCompile Include="graphics\platform\imgui\imgui_demo.cpp" />
     <ClCompile Include="graphics\platform\imgui\imgui_draw.cpp" />
@@ -189,15 +190,14 @@
     <ClCompile Include="graphics\platform\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="graphics\platform\imgui\imgui_tables.cpp" />
     <ClCompile Include="graphics\platform\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="graphics\queue.cppm" />
-    <ClCompile Include="graphics\renderer.cppm" />
-    <ClCompile Include="graphics\pipeline.cppm" />
-    <ClCompile Include="graphics\swapchain.cppm" />
-    <ClCompile Include="graphics\image.cppm" />
-    <ClCompile Include="graphics\window.cppm" />
+    <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="graphics\buffer.hpp" />
+    <ClInclude Include="graphics\cmd.hpp" />
+    <ClInclude Include="graphics\device.hpp" />
+    <ClInclude Include="graphics\instance.hpp" />
     <ClInclude Include="graphics\platform\imgui\imconfig.h" />
     <ClInclude Include="graphics\platform\imgui\imgui.h" />
     <ClInclude Include="graphics\platform\imgui\imgui_impl_sdl2.h" />
@@ -209,6 +209,15 @@
     <ClInclude Include="graphics\platform\SDL.hpp" />
     <ClInclude Include="graphics\platform\stb_image.h" />
     <ClInclude Include="graphics\platform\vulkan.hpp" />
+    <ClInclude Include="graphics\queue.hpp" />
+    <ClInclude Include="graphics\swapchain.hpp" />
+    <ClInclude Include="graphics\ui.hpp" />
+    <ClInclude Include="graphics\mesh.hpp" />
+    <ClInclude Include="graphics\renderer.hpp" />
+    <ClInclude Include="graphics\image.hpp" />    
+    <ClInclude Include="graphics\pipeline.hpp" />    
+    <ClInclude Include="graphics\types.hpp" />
+    <ClInclude Include="graphics\window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.frag" />

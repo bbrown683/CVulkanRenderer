@@ -1,16 +1,16 @@
-module;
-#include "platform/vulkan.hpp"
+#pragma once
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
 #include <FreeImage.h>
-export module image;
-import <exception>;
+#include <exception>
 
-export enum CVulkanImageCreationError {
+enum CVulkanImageCreationError {
     IMAGE_UNSUPPORTED,
     IMAGE_LOAD_FAILED,
     IMAGE_INVALID_MEMORY_TYPE
 };
 
-export class CVulkanImageCreationException : public std::exception {
+class CVulkanImageCreationException : public std::exception {
     CVulkanImageCreationError error;
 public:
     CVulkanImageCreationException(CVulkanImageCreationError error) : error(error) {}
@@ -24,16 +24,16 @@ public:
     }
 };
 
-export class CVulkanImage {
+class CVulkanImage {
     vk::Image swapchainImage;
-    vk::UniqueImage image;
-    vk::UniqueImageView imageView;
-    vk::UniqueDeviceMemory imageMemory; // Used for data thats being written to the image.
+    std::shared_ptr<vk::raii::Image> image;
+    std::shared_ptr<vk::raii::ImageView> view;
+    std::shared_ptr<vk::raii::DeviceMemory> memory; // Used for data thats being written to the image.
     vk::Extent3D extent;
     vk::ImageSubresourceRange range;
 public:
     // Takes an existing image.
-    CVulkanImage(vk::Device device, vk::Image image, vk::Extent3D extent, vk::Format format) : swapchainImage(image), extent(extent) {
+    CVulkanImage(std::shared_ptr<vk::raii::Device> device, vk::Image image, vk::Extent3D extent, vk::Format format) : swapchainImage(image), extent(extent) {
         range = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
 
         vk::ImageViewCreateInfo imageViewInfo;
@@ -41,11 +41,11 @@ public:
         imageViewInfo.setViewType(vk::ImageViewType::e2D);
         imageViewInfo.setFormat(format);
         imageViewInfo.setSubresourceRange(range);
-        imageView = device.createImageViewUnique(imageViewInfo);
+        view = std::make_unique<vk::raii::ImageView>(*device, imageViewInfo);
     }
 
     // Creates an image from bits.
-    CVulkanImage(vk::Device device, vk::PhysicalDeviceMemoryProperties memoryProperties, vk::Extent3D extent, vk::Format format,
+    CVulkanImage(std::shared_ptr<vk::raii::Device> device, vk::PhysicalDeviceMemoryProperties memoryProperties, vk::Extent3D extent, vk::Format format,
                  vk::MemoryPropertyFlagBits memoryPropertyFlags = vk::MemoryPropertyFlagBits::eDeviceLocal, uint8_t mipLevels = 1, 
                  vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1, uint8_t* bits = nullptr) 
                 : extent(extent) {
@@ -54,28 +54,28 @@ public:
                                              extent, mipLevels, 1, samples, vk::ImageTiling::eOptimal,
                                              vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
                                              vk::SharingMode::eExclusive);
-        image = device.createImageUnique(imageInfo);
+        image = std::make_unique<vk::raii::Image>(*device, imageInfo);
 
         vk::ImageViewCreateInfo imageViewInfo;
-        imageViewInfo.setImage(*image);
+        imageViewInfo.setImage(**image);
         imageViewInfo.setViewType(vk::ImageViewType::e2D);
         imageViewInfo.setFormat(format);
         imageViewInfo.setSubresourceRange(range);
-        imageView = device.createImageViewUnique(imageViewInfo);
+        view = std::make_unique<vk::raii::ImageView>(*device, imageViewInfo);
 
         if(bits != nullptr) {
-            vk::MemoryRequirements memoryRequirements = device.getImageMemoryRequirements(*image);
+            vk::MemoryRequirements memoryRequirements = image->getMemoryRequirements();
             uint8_t memoryTypeIndex = FindMemoryTypeIndex(memoryRequirements, memoryProperties, memoryPropertyFlags);
             if(memoryTypeIndex == -1) {
                 throw new CVulkanImageCreationException(CVulkanImageCreationError::IMAGE_INVALID_MEMORY_TYPE);
             }
             auto allocateInfo = vk::MemoryAllocateInfo(memoryRequirements.size, memoryTypeIndex);
-            imageMemory = device.allocateMemoryUnique(allocateInfo);
-            device.bindImageMemory(*image, *imageMemory, 0);
+            memory = std::make_unique<vk::raii::DeviceMemory>(*device, allocateInfo);
+            image->bindMemory(**memory, 0);
         }
     }
     
-    CVulkanImage(vk::Device device, vk::PhysicalDeviceMemoryProperties memoryProperties, std::string path, vk::Format format,
+    CVulkanImage(std::shared_ptr<vk::raii::Device> device, vk::PhysicalDeviceMemoryProperties memoryProperties, std::string path, vk::Format format,
                  vk::MemoryPropertyFlagBits memoryPropertyFlags = vk::MemoryPropertyFlagBits::eDeviceLocal, uint8_t mipLevels = 1,
                  vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1) {
         FREE_IMAGE_FORMAT fif = FreeImage_GetFIFFromFilename(path.c_str());
@@ -109,11 +109,11 @@ public:
         if(swapchainImage) {
             return swapchainImage;
         }
-        return *image;
+        return **image;
     }
 
     vk::ImageView GetVkImageView() {
-        return *imageView;
+        return **view;
     }
 
 private:
