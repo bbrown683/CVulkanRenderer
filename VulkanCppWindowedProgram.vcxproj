@@ -176,6 +176,7 @@
     <ClCompile Include="graphics\buffer.cpp" />
     <ClCompile Include="graphics\cmd.cpp" />
     <ClCompile Include="graphics\device.cpp" />
+    <ClCompile Include="graphics\image.cpp" />
     <ClCompile Include="graphics\instance.cpp" />
     <ClCompile Include="graphics\mesh.cpp" />
     <ClCompile Include="graphics\pipeline.cpp" />
@@ -190,6 +191,7 @@
     <ClCompile Include="graphics\platform\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="graphics\platform\imgui\imgui_tables.cpp" />
     <ClCompile Include="graphics\platform\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="graphics\util.cpp" />
     <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -206,17 +208,16 @@
     <ClInclude Include="graphics\platform\imgui\imstb_rectpack.h" />
     <ClInclude Include="graphics\platform\imgui\imstb_textedit.h" />
     <ClInclude Include="graphics\platform\imgui\imstb_truetype.h" />
-    <ClInclude Include="graphics\platform\SDL.hpp" />
-    <ClInclude Include="graphics\platform\stb_image.h" />
-    <ClInclude Include="graphics\platform\vulkan.hpp" />
+    <ClInclude Include="graphics\platform\stb\stb_image.h" />
     <ClInclude Include="graphics\queue.hpp" />
     <ClInclude Include="graphics\swapchain.hpp" />
     <ClInclude Include="graphics\ui.hpp" />
     <ClInclude Include="graphics\mesh.hpp" />
     <ClInclude Include="graphics\renderer.hpp" />
-    <ClInclude Include="graphics\image.hpp" />    
-    <ClInclude Include="graphics\pipeline.hpp" />    
+    <ClInclude Include="graphics\image.hpp" />
+    <ClInclude Include="graphics\pipeline.hpp" />
     <ClInclude Include="graphics\types.hpp" />
+    <ClInclude Include="graphics\util.hpp" />
     <ClInclude Include="graphics\window.hpp" />
   </ItemGroup>
   <ItemGroup>

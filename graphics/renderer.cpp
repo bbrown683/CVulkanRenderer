@@ -59,7 +59,7 @@ void CVulkanRenderer::DrawFrame() {
     currentCommandBuffer->BeginPass(&frame, &render);
     meshRenderer->Draw(&frame, meshes);
 #ifdef _DEBUG
-    ui->Draw(&frame);
+    //ui->Draw(&frame);
 #endif
     currentCommandBuffer->EndPass(&frame);
     graphicsQueue->Submit(currentCommandBuffer, frame.submitSemaphore, frame.acquireSemaphore, vk::PipelineStageFlagBits::eColorAttachmentOutput, frame.acquireFence);

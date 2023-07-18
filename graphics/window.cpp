@@ -1,7 +1,6 @@
 #include "window.hpp"
 
 #include <cstdio>
-#include <SDL2/SDL.h>
 #include "platform/imgui/imgui.h"
 #include "platform/imgui/imgui_impl_sdl2.h"
 

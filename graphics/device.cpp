@@ -3,6 +3,7 @@
 #include "queue.hpp"
 #include "buffer.hpp"
 #include "pipeline.hpp"
+#include "image.hpp"
 
 CVulkanDevice::CVulkanDevice(vk::raii::PhysicalDevice physicalDevice) : physicalDevice(physicalDevice) {
     availableLayers = physicalDevice.enumerateDeviceLayerProperties();
@@ -113,4 +114,8 @@ CVulkanBuffer CVulkanDevice::CreateBuffer(vk::MemoryPropertyFlags desiredPropert
 
 CVulkanGraphicsPipeline CVulkanDevice::CreateGraphicsPipeline(std::string vertexShaderFile, std::string fragmentShaderFile, vk::Format colorFormat) {
     return CVulkanGraphicsPipeline(device, vertexShaderFile, fragmentShaderFile, colorFormat);
+}
+
+CVulkanImage CVulkanDevice::CreateImage(vk::Extent3D extent, vk::Format format, uint8_t mipLevels, vk::SampleCountFlagBits samples) {
+    return CVulkanImage(device, memoryProperties, extent, format, mipLevels, samples);
 }

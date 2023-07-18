@@ -1,7 +1,6 @@
 #pragma once
-#include "platform/SDL.hpp"
 
-struct SDL_Window;
+#include <SDL2/SDL.h>
 
 class CSDLWindow {
     SDL_Window* window;

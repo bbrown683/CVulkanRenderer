@@ -9,12 +9,13 @@
 #include "device.hpp"
 #include "queue.hpp"
 #include "cmd.hpp"
+#include "image.hpp"
 #include "types.hpp"
 
-CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevice* pDevice, 
+CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevice* device, 
     CVulkanQueue* queue, CVulkanCommandPool* commandPool, std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers, 
     uint32_t imageCount, vk::Format colorFormat)
-    : window(window), instance(instance), device(pDevice), queue(queue), commandBuffers(commandBuffers) {
+    : window(window), instance(instance), device(device), queue(queue), commandPool(commandPool), commandBuffers(commandBuffers) {
     auto vkInstance = instance->GetVkInstance();
     auto vkPhysicalDevice = device->GetVkPhysicalDevice();
     auto vkDevice = device->GetVkDevice();
@@ -117,7 +118,7 @@ void CVulkanUi::Draw(CVulkanFrame* frame) {
 
     if(ImGui::Begin("Renderer")) {
         ImVec2 viewport = ImGui::GetContentRegionAvail();
-        auto viewportExtent = vk::Extent2D{ static_cast<uint32_t>(viewport.x), static_cast<uint32_t>(viewport.y) };
+        viewportExtent = vk::Extent3D{ static_cast<uint32_t>(viewport.x), static_cast<uint32_t>(viewport.y), 1 };
         ImGui::End();
     }
 

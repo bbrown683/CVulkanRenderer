@@ -38,7 +38,5 @@ public:
     std::unique_ptr<CVulkanQueue> GetTransferQueue();
     CVulkanBuffer CreateBuffer(vk::MemoryPropertyFlags desiredPropertyFlags, vk::BufferUsageFlags usage, void* data, vk::DeviceSize dataSize);
     CVulkanGraphicsPipeline CreateGraphicsPipeline(std::string vertexShaderFile, std::string fragmentShaderFile, vk::Format colorFormat);
-    /*
-    CVulkanImage CreateImage(uint16_t width, uint16_t height, vk::Format format);
-    */
+    CVulkanImage CreateImage(vk::Extent3D extent, vk::Format format, uint8_t mipLevels = 1, vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1);
 };

@@ -3,6 +3,7 @@
 #include "platform/imgui/imgui_impl_vulkan.h"
 #include "types.hpp"
 #include "buffer.hpp"
+#include "image.hpp"
 
 CVulkanCommandBuffer::CVulkanCommandBuffer(std::shared_ptr<vk::raii::Device> device, std::shared_ptr<vk::raii::CommandPool> commandPool, vk::CommandBufferLevel level) {
     auto commandBufferInfo = vk::CommandBufferAllocateInfo(**commandPool, level, 1);
@@ -72,8 +73,20 @@ void CVulkanCommandBuffer::CopyBuffer(CVulkanBuffer* srcBuffer, CVulkanBuffer* d
     End();
 }
 
-void CVulkanCommandBuffer::ExecuteCommandBuffers(std::vector<vk::CommandBuffer> commandBuffers) {
-    commandBuffer->executeCommands(commandBuffers);
+void CVulkanCommandBuffer::CopyImage(CVulkanImage* srcImage, CVulkanImage* dstImage, vk::ImageCopy regions) {
+    Begin();
+    commandBuffer->copyImage(srcImage->GetVkImage(), vk::ImageLayout::eTransferSrcOptimal, dstImage->GetVkImage(), vk::ImageLayout::eTransferDstOptimal, regions);
+    End();
+}
+
+void CVulkanCommandBuffer::CopyBufferToImage(CVulkanBuffer* buffer, CVulkanImage* image, vk::ImageLayout layout, vk::BufferImageCopy regions) {
+    Begin();
+    commandBuffer->copyBufferToImage(buffer->GetVkBuffer(), image->GetVkImage(), layout, regions);
+    End();
+}
+
+void CVulkanCommandBuffer::ExecuteCommandBuffers(std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers) {
+
 }
 
 void CVulkanCommandBuffer::UploadImguiFonts() {

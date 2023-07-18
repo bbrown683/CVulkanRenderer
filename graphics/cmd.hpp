@@ -4,6 +4,7 @@
 
 struct ImDrawData;
 class CVulkanBuffer;
+class CVulkanImage;
 struct CVulkanDraw;
 struct CVulkanFrame;
 struct CVulkanRender;
@@ -20,7 +21,9 @@ public:
     void Draw(CVulkanDraw* draw);
     void Draw(ImDrawData* drawData);
     void CopyBuffer(CVulkanBuffer* srcBuffer, CVulkanBuffer* dstBuffer, vk::BufferCopy regions);
-    void ExecuteCommandBuffers(std::vector<vk::CommandBuffer> commandBuffers);
+    void CopyImage(CVulkanImage* srcImage, CVulkanImage* dstImage, vk::ImageCopy regions);
+    void CopyBufferToImage(CVulkanBuffer* buffer, CVulkanImage* image, vk::ImageLayout layout, vk::BufferImageCopy regions);
+    void ExecuteCommandBuffers(std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers);
     void UploadImguiFonts();
     vk::CommandBuffer GetVkCommandBuffer();
 private:
