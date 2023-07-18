@@ -30,8 +30,8 @@ vk::Image CVulkanImage::GetVkImage() {
     return **image;
 }
 
-CVulkanImageLoader::CVulkanImageLoader(CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandPool* commandPool, std::shared_ptr<CVulkanCommandBuffer> commandBuffer) 
-    : device(device), queue(queue), commandPool(commandPool), commandBuffer(commandBuffer) {}
+CVulkanImageLoader::CVulkanImageLoader(CVulkanDevice* device, CVulkanQueue* transferQueue, std::shared_ptr<CVulkanCommandBuffer> transferCommandBuffer)
+    : device(device), transferQueue(transferQueue), transferCommandBuffer(transferCommandBuffer) {}
 
 CVulkanImage CVulkanImageLoader::Load(std::string path, vk::Format format, uint8_t mipLevels, vk::SampleCountFlagBits samples) {
     auto vkDevice = device->GetVkDevice();
@@ -57,8 +57,8 @@ CVulkanImage CVulkanImageLoader::Load(std::string path, vk::Format format, uint8
     region.imageOffset = vk::Offset3D { 0, 0, 0 };
     region.imageExtent = extent;
 
-    commandBuffer->CopyBufferToImage(&stagingBuffer, &image, vk::ImageLayout::eTransferDstOptimal, region);
-    queue->Submit(commandBuffer);
-    commandPool->Reset();
+    transferCommandBuffer->CopyBufferToImage(&stagingBuffer, &image, vk::ImageLayout::eTransferDstOptimal, region);
+    transferQueue->Submit(transferCommandBuffer);
+    transferCommandBuffer->Reset();
     return image;
 }

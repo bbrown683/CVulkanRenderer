@@ -7,8 +7,8 @@
 #include "cmd.hpp"
 #include "types.hpp"
 
-CVulkanMeshLoader::CVulkanMeshLoader(CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandPool* commandPool, std::shared_ptr<CVulkanCommandBuffer> commandBuffer) 
-    : device(device), queue(queue), commandPool(commandPool), commandBuffer(commandBuffer) {}
+CVulkanMeshLoader::CVulkanMeshLoader(CVulkanDevice* device, CVulkanQueue* transferQueue, std::shared_ptr<CVulkanCommandBuffer> transferCommandBuffer) 
+    : device(device), transferQueue(transferQueue), transferCommandBuffer(transferCommandBuffer) {}
 
 CVulkanMesh CVulkanMeshLoader::Load(std::vector<CVulkanVertex> vertices, std::vector<uint16_t> indices) {
     auto vkDevice = device->GetVkDevice();
@@ -22,23 +22,24 @@ CVulkanMesh CVulkanMeshLoader::Load(std::vector<CVulkanVertex> vertices, std::ve
     auto stagingVertexBuffer = device->CreateBuffer(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vk::BufferUsageFlagBits::eTransferSrc, vertices.data(), vertexBufferSize);
     mesh.vertexBuffer = std::make_unique<CVulkanBuffer>(device->CreateBuffer(vk::MemoryPropertyFlagBits::eDeviceLocal, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, nullptr, vertexBufferSize));
 
-    commandBuffer->CopyBuffer(&stagingVertexBuffer, mesh.vertexBuffer.get(), vk::BufferCopy(0, 0, vertexBufferSize));
-    queue->Submit(commandBuffer);
-    commandPool->Reset();
+    transferCommandBuffer->CopyBuffer(&stagingVertexBuffer, mesh.vertexBuffer.get(), vk::BufferCopy(0, 0, vertexBufferSize));
+    transferQueue->Submit(transferCommandBuffer);
+    transferCommandBuffer->Reset();
 
     if(indices.size() > 0) {
         vk::DeviceSize indexBufferSize = sizeof(uint16_t) * indices.size();
         auto stagingIndexBuffer = device->CreateBuffer(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, vk::BufferUsageFlagBits::eTransferSrc, indices.data(), indexBufferSize);
         mesh.indexBuffer = std::make_unique<CVulkanBuffer>(device->CreateBuffer(vk::MemoryPropertyFlagBits::eDeviceLocal, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, nullptr, indexBufferSize));
 
-        commandBuffer->CopyBuffer(&stagingIndexBuffer, mesh.indexBuffer.get(), vk::BufferCopy(0, 0, indexBufferSize));
-        queue->Submit(commandBuffer);
-        commandPool->Reset();
+        transferCommandBuffer->CopyBuffer(&stagingIndexBuffer, mesh.indexBuffer.get(), vk::BufferCopy(0, 0, indexBufferSize));
+        transferQueue->Submit(transferCommandBuffer);
+        transferCommandBuffer->Reset();
     }
     return mesh;
 }
 
-CVulkanMeshRenderer::CVulkanMeshRenderer(CVulkanGraphicsPipeline* pipeline, std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers) : pipeline(pipeline), commandBuffers(commandBuffers) {}
+CVulkanMeshRenderer::CVulkanMeshRenderer(CVulkanGraphicsPipeline* pipeline, std::vector<std::shared_ptr<CVulkanCommandBuffer>> graphicsCommandBuffers)
+    : pipeline(pipeline), graphicsCommandBuffers(graphicsCommandBuffers) {}
 
 void CVulkanMeshRenderer::Draw(CVulkanFrame* frame, std::vector<std::shared_ptr<CVulkanMesh>> meshes) {
     CVulkanDraw draw;
@@ -50,6 +51,6 @@ void CVulkanMeshRenderer::Draw(CVulkanFrame* frame, std::vector<std::shared_ptr<
         draw.indicesCount = static_cast<uint32_t>(mesh->indices.size());
         draw.indexBuffer = mesh->indexBuffer->GetVkBuffer();
         draw.indexBufferOffset = 0;
-        commandBuffers[frame->currentFrame]->Draw(&draw);
+        graphicsCommandBuffers[frame->currentFrame]->Draw(&draw);
     }
 }

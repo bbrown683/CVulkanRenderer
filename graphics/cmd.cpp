@@ -95,6 +95,10 @@ void CVulkanCommandBuffer::UploadImguiFonts() {
     End();
 }
 
+void CVulkanCommandBuffer::Reset() {
+    commandBuffer->reset();
+}
+
 vk::CommandBuffer CVulkanCommandBuffer::GetVkCommandBuffer() {
     return **commandBuffer;
 }

@@ -25,6 +25,7 @@ public:
     void CopyBufferToImage(CVulkanBuffer* buffer, CVulkanImage* image, vk::ImageLayout layout, vk::BufferImageCopy regions);
     void ExecuteCommandBuffers(std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers);
     void UploadImguiFonts();
+    void Reset();
     vk::CommandBuffer GetVkCommandBuffer();
 private:
     void Begin();

@@ -39,18 +39,17 @@ struct CVulkanMesh {
 
 class CVulkanMeshLoader {
     CVulkanDevice* device;
-    CVulkanQueue* queue;
-    CVulkanCommandPool* commandPool;
-    std::shared_ptr<CVulkanCommandBuffer> commandBuffer;
+    CVulkanQueue* transferQueue;
+    std::shared_ptr<CVulkanCommandBuffer> transferCommandBuffer;
 public:
-    CVulkanMeshLoader(CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandPool* commandPool, std::shared_ptr<CVulkanCommandBuffer> commandBuffer);
+    CVulkanMeshLoader(CVulkanDevice* device, CVulkanQueue* transferQueue, std::shared_ptr<CVulkanCommandBuffer> transferCommandBuffer);
     CVulkanMesh Load(std::vector<CVulkanVertex> vertices, std::vector<uint16_t> indices = {});
 };
 
 class CVulkanMeshRenderer {
     CVulkanGraphicsPipeline* pipeline;
-    std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers;
+    std::vector<std::shared_ptr<CVulkanCommandBuffer>> graphicsCommandBuffers;
 public:
-    CVulkanMeshRenderer(CVulkanGraphicsPipeline* pipeline, std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers);
+    CVulkanMeshRenderer(CVulkanGraphicsPipeline* pipeline, std::vector<std::shared_ptr<CVulkanCommandBuffer>> graphicsCommandBuffers);
     void Draw(CVulkanFrame* frame, std::vector<std::shared_ptr<CVulkanMesh>> meshes);
 };

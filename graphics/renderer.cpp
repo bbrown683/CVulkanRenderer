@@ -24,7 +24,7 @@ CVulkanRenderer::CVulkanRenderer(CSDLWindow* window) {
 
     graphicsCommandPool = std::make_unique<CVulkanCommandPool>(graphicsQueue->CreateCommandPool());
     computeCommandPool = std::make_unique<CVulkanCommandPool>(computeQueue->CreateCommandPool());
-    transferCommandPool = std::make_unique<CVulkanCommandPool>(transferQueue->CreateCommandPool());
+    transferCommandPool = std::make_unique<CVulkanCommandPool>(transferQueue->CreateCommandPool(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)); // Reset command buffers instead for transfer operations instead of the whole pool.
 
     for(int i = 0; i < imageCount; i++) {
         graphicsCommandBuffers.push_back(std::make_shared<CVulkanCommandBuffer>(graphicsCommandPool->CreateCommandBuffer()));
@@ -37,7 +37,7 @@ CVulkanRenderer::CVulkanRenderer(CSDLWindow* window) {
     pipeline = std::make_unique<CVulkanGraphicsPipeline>(device->CreateGraphicsPipeline("vertex.spv", "fragment.spv", surfaceFormat));
 
     meshRenderer = std::make_unique<CVulkanMeshRenderer>(pipeline.get(), graphicsCommandBuffers);
-    meshLoader = std::make_unique<CVulkanMeshLoader>(device.get(), transferQueue.get(), transferCommandPool.get(), transferCommandBuffer);
+    meshLoader = std::make_unique<CVulkanMeshLoader>(device.get(), transferQueue.get(), transferCommandBuffer);
     meshes.push_back(std::make_shared<CVulkanMesh>(meshLoader->Load(vertices, indices)));
     ui = std::make_unique<CVulkanUi>(window->GetSDL_Window(), instance.get(), device.get(), graphicsQueue.get(), graphicsCommandPool.get(), graphicsCommandBuffers, 2, surfaceFormat);
 }

@@ -41,10 +41,9 @@ private:
 
 class CVulkanImageLoader {
     CVulkanDevice* device;
-    CVulkanQueue* queue;
-    CVulkanCommandPool* commandPool;
-    std::shared_ptr<CVulkanCommandBuffer> commandBuffer;
+    CVulkanQueue* transferQueue;
+    std::shared_ptr<CVulkanCommandBuffer> transferCommandBuffer;
 public:
-    CVulkanImageLoader(CVulkanDevice* device, CVulkanQueue* queue, CVulkanCommandPool* commandPool, std::shared_ptr<CVulkanCommandBuffer> commandBuffer);
+    CVulkanImageLoader(CVulkanDevice* device, CVulkanQueue* transferQueue, std::shared_ptr<CVulkanCommandBuffer> transferCommandBuffer);
     CVulkanImage Load(std::string path, vk::Format format, uint8_t mipLevels, vk::SampleCountFlagBits samples);
 };
