@@ -180,17 +180,19 @@
     <ClCompile Include="graphics\instance.cpp" />
     <ClCompile Include="graphics\mesh.cpp" />
     <ClCompile Include="graphics\pipeline.cpp" />
+    <ClCompile Include="platform\tinygltf\tiny_gltf.cc" />
+    <ClCompile Include="platform\ufbx\ufbx.c" />
     <ClCompile Include="graphics\queue.cpp" />
     <ClCompile Include="graphics\renderer.cpp" />
     <ClCompile Include="graphics\swapchain.cpp" />
     <ClCompile Include="graphics\ui.cpp" />
-    <ClCompile Include="graphics\platform\imgui\imgui.cpp" />
-    <ClCompile Include="graphics\platform\imgui\imgui_demo.cpp" />
-    <ClCompile Include="graphics\platform\imgui\imgui_draw.cpp" />
-    <ClCompile Include="graphics\platform\imgui\imgui_impl_sdl2.cpp" />
-    <ClCompile Include="graphics\platform\imgui\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="graphics\platform\imgui\imgui_tables.cpp" />
-    <ClCompile Include="graphics\platform\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="platform\imgui\imgui.cpp" />
+    <ClCompile Include="platform\imgui\imgui_demo.cpp" />
+    <ClCompile Include="platform\imgui\imgui_draw.cpp" />
+    <ClCompile Include="platform\imgui\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="platform\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="platform\imgui\imgui_tables.cpp" />
+    <ClCompile Include="platform\imgui\imgui_widgets.cpp" />
     <ClCompile Include="graphics\util.cpp" />
     <ClCompile Include="graphics\window.cpp" />
     <ClCompile Include="main.cpp" />
@@ -200,15 +202,19 @@
     <ClInclude Include="graphics\cmd.hpp" />
     <ClInclude Include="graphics\device.hpp" />
     <ClInclude Include="graphics\instance.hpp" />
-    <ClInclude Include="graphics\platform\imgui\imconfig.h" />
-    <ClInclude Include="graphics\platform\imgui\imgui.h" />
-    <ClInclude Include="graphics\platform\imgui\imgui_impl_sdl2.h" />
-    <ClInclude Include="graphics\platform\imgui\imgui_impl_vulkan.h" />
-    <ClInclude Include="graphics\platform\imgui\imgui_internal.h" />
-    <ClInclude Include="graphics\platform\imgui\imstb_rectpack.h" />
-    <ClInclude Include="graphics\platform\imgui\imstb_textedit.h" />
-    <ClInclude Include="graphics\platform\imgui\imstb_truetype.h" />
-    <ClInclude Include="graphics\platform\stb\stb_image.h" />
+    <ClInclude Include="platform\imgui\imconfig.h" />
+    <ClInclude Include="platform\imgui\imgui.h" />
+    <ClInclude Include="platform\imgui\imgui_impl_sdl2.h" />
+    <ClInclude Include="platform\imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="platform\imgui\imgui_internal.h" />
+    <ClInclude Include="platform\imgui\imstb_rectpack.h" />
+    <ClInclude Include="platform\imgui\imstb_textedit.h" />
+    <ClInclude Include="platform\imgui\imstb_truetype.h" />
+    <ClInclude Include="platform\stb\stb_image.h" />
+    <ClInclude Include="platform\tinygltf\json.hpp" />
+    <ClInclude Include="platform\tinygltf\tiny_gltf.h" />
+    <ClInclude Include="platform\tinyobjloader\tiny_obj_loader.h" />
+    <ClInclude Include="platform\ufbx\ufbx.h" />
     <ClInclude Include="graphics\queue.hpp" />
     <ClInclude Include="graphics\swapchain.hpp" />
     <ClInclude Include="graphics\ui.hpp" />
@@ -221,8 +227,9 @@
     <ClInclude Include="graphics\window.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.frag" />
-    <None Include="vertex.vert" />
+    <None Include="README.md" />
+    <None Include="shaders\fragment.frag" />
+    <None Include="shaders\vertex.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -236,7 +243,7 @@ $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
     <PublicIncludeDirectories>$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\platform;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Bin

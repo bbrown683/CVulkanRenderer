@@ -1,9 +1,9 @@
 #include "ui.hpp"
 
 #include <SDL2/SDL.h>
-#include "platform/imgui/imgui.h"
-#include "platform/imgui/imgui_impl_sdl2.h"
-#include "platform/imgui/imgui_impl_vulkan.h"
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl2.h>
+#include <imgui/imgui_impl_vulkan.h>
 
 #include "instance.hpp"
 #include "device.hpp"
@@ -51,7 +51,7 @@ CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevic
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 
-    io.Fonts->AddFontFromFileTTF("Roboto-Bold.ttf", 16.0f);
+    io.Fonts->AddFontFromFileTTF("fonts/Roboto-Bold.ttf", 16.0f);
 
     ImGui_ImplVulkan_InitInfo imguiVulkanInitInfo;
     imguiVulkanInitInfo.Instance = **vkInstance;
@@ -118,7 +118,7 @@ void CVulkanUi::Draw(CVulkanFrame* frame) {
 
     if(ImGui::Begin("Renderer")) {
         ImVec2 viewport = ImGui::GetContentRegionAvail();
-        viewportExtent = vk::Extent3D{ static_cast<uint32_t>(viewport.x), static_cast<uint32_t>(viewport.y), 1 };
+        viewportExtent = vk::Extent2D{ static_cast<uint32_t>(viewport.x), static_cast<uint32_t>(viewport.y) };
         ImGui::End();
     }
 

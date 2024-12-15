@@ -46,6 +46,10 @@ public:
     CVulkanMesh Load(std::vector<CVulkanVertex> vertices, std::vector<uint16_t> indices = {});
 };
 
+class CVulkanModelLoader {
+
+};
+
 class CVulkanMeshRenderer {
     CVulkanGraphicsPipeline* pipeline;
     std::vector<std::shared_ptr<CVulkanCommandBuffer>> graphicsCommandBuffers;

@@ -1,7 +1,7 @@
 #include "image.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "platform/stb/stb_image.h"
+#include <stb/stb_image.h>
 
 #include "device.hpp"
 #include "queue.hpp"

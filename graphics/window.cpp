@@ -1,8 +1,8 @@
 #include "window.hpp"
 
 #include <cstdio>
-#include "platform/imgui/imgui.h"
-#include "platform/imgui/imgui_impl_sdl2.h"
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl2.h>
 
 CSDLWindow::CSDLWindow(int width, int height) : running(true) {
     // Create an SDL window that supports Vulkan rendering.
@@ -14,8 +14,8 @@ CSDLWindow::CSDLWindow(int width, int height) : running(true) {
 #ifdef SDL_HINT_IME_SHOW_UI
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 #endif
-
-    window = SDL_CreateWindow("Vulkan Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("Vulkan Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI);
+    //window = SDL_CreateWindow("Vulkan Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     if(window == nullptr) {
         printf("Failed to initialize SDL!");
     }

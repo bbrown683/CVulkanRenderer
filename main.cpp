@@ -3,7 +3,7 @@
 #include "graphics/renderer.hpp"
 
 auto main() -> int {
-    CSDLWindow window(1920, 1080);
+    CSDLWindow window(1024, 768);
     CVulkanRenderer renderer(&window);
 
     while(window.IsRunning()) {

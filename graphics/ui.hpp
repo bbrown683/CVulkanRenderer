@@ -18,7 +18,8 @@ class CVulkanUi {
     CVulkanQueue* queue;
     CVulkanCommandPool* commandPool;
     std::vector<std::shared_ptr<CVulkanCommandBuffer>> commandBuffers;
-    vk::Extent3D viewportExtent;
+    vk::Viewport viewport;
+    vk::Extent2D viewportExtent;
     std::unique_ptr<vk::raii::DescriptorPool> descriptorPool = nullptr;
 public:
     CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevice* device, CVulkanQueue* queue,
@@ -26,5 +27,4 @@ public:
         uint32_t imageCount, vk::Format colorFormat);
     ~CVulkanUi();
     void Draw(CVulkanFrame* frame);
-    void SetViewport(CVulkanFrame* frame);
 };

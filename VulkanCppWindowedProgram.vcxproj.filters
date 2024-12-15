@@ -19,25 +19,25 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\platform\imgui\imgui.cpp">
+    <ClCompile Include="platform\imgui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\platform\imgui\imgui_draw.cpp">
+    <ClCompile Include="platform\imgui\imgui_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\platform\imgui\imgui_impl_sdl2.cpp">
+    <ClCompile Include="platform\imgui\imgui_impl_sdl2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\platform\imgui\imgui_impl_vulkan.cpp">
+    <ClCompile Include="platform\imgui\imgui_impl_vulkan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\platform\imgui\imgui_tables.cpp">
+    <ClCompile Include="platform\imgui\imgui_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\platform\imgui\imgui_widgets.cpp">
+    <ClCompile Include="platform\imgui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\platform\imgui\imgui_demo.cpp">
+    <ClCompile Include="platform\imgui\imgui_demo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="graphics\buffer.cpp">
@@ -79,33 +79,39 @@
     <ClCompile Include="graphics\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="platform\tinygltf\tiny_gltf.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="platform\ufbx\ufbx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="graphics\platform\stb\stb_image.h">
+    <ClInclude Include="platform\stb\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imconfig.h">
+    <ClInclude Include="platform\imgui\imconfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imgui.h">
+    <ClInclude Include="platform\imgui\imgui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imgui_impl_sdl2.h">
+    <ClInclude Include="platform\imgui\imgui_impl_sdl2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imgui_impl_vulkan.h">
+    <ClInclude Include="platform\imgui\imgui_impl_vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imgui_internal.h">
+    <ClInclude Include="platform\imgui\imgui_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imstb_rectpack.h">
+    <ClInclude Include="platform\imgui\imstb_rectpack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imstb_textedit.h">
+    <ClInclude Include="platform\imgui\imstb_textedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\platform\imgui\imstb_truetype.h">
+    <ClInclude Include="platform\imgui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="graphics\buffer.hpp">
@@ -150,9 +156,22 @@
     <ClInclude Include="graphics\util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="platform\tinyobjloader\tiny_obj_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="platform\tinygltf\json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="platform\tinygltf\tiny_gltf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="platform\ufbx\ufbx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertex.vert" />
-    <None Include="fragment.frag" />
+    <None Include="README.md" />
+    <None Include="shaders\vertex.vert" />
+    <None Include="shaders\fragment.frag" />
   </ItemGroup>
 </Project>

@@ -34,7 +34,7 @@ CVulkanRenderer::CVulkanRenderer(CSDLWindow* window) {
     transferCommandBuffer = std::make_shared<CVulkanCommandBuffer>(transferCommandPool->CreateCommandBuffer());
 
     auto surfaceFormat = swapchain->GetVkSurfaceFormat();
-    pipeline = std::make_unique<CVulkanGraphicsPipeline>(device->CreateGraphicsPipeline("vertex.spv", "fragment.spv", surfaceFormat));
+    pipeline = std::make_unique<CVulkanGraphicsPipeline>(device->CreateGraphicsPipeline("shaders/vertex.spv", "shaders/fragment.spv", surfaceFormat));
 
     meshRenderer = std::make_unique<CVulkanMeshRenderer>(pipeline.get(), graphicsCommandBuffers);
     meshLoader = std::make_unique<CVulkanMeshLoader>(device.get(), transferQueue.get(), transferCommandBuffer);
@@ -57,9 +57,11 @@ void CVulkanRenderer::DrawFrame() {
 
     auto currentCommandBuffer = graphicsCommandBuffers[frame.currentFrame];
     currentCommandBuffer->BeginPass(&frame, &render);
-    meshRenderer->Draw(&frame, meshes);
 #ifdef _DEBUG
-    //ui->Draw(&frame);
+    ui->Draw(&frame);
+    meshRenderer->Draw(&frame, meshes);
+#else
+    meshRenderer->Draw(&frame, meshes);
 #endif
     currentCommandBuffer->EndPass(&frame);
     graphicsQueue->Submit(currentCommandBuffer, frame.submitSemaphore, frame.acquireSemaphore, vk::PipelineStageFlagBits::eColorAttachmentOutput, frame.acquireFence);
