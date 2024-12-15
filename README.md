@@ -1,7 +1,8 @@
 # Surreel3D
-A WIP Animation tool inspired by [Blender](https://www.blender.org/). 
+A self-learning project to recreate the popular animation tool [Blender](https://www.blender.org/) from scratch. 
 
 ## TODO
+* Convert to CMake
 * Basically everything
 
 ## Dependencies
