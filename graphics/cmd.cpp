@@ -91,7 +91,7 @@ void CVulkanCommandBuffer::ExecuteCommandBuffers(std::vector<std::shared_ptr<CVu
 
 void CVulkanCommandBuffer::UploadImguiFonts() {
     Begin();
-    ImGui_ImplVulkan_CreateFontsTexture(**commandBuffer.get());
+    ImGui_ImplVulkan_CreateFontsTexture();
     End();
 }
 

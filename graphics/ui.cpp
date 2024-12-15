@@ -1,6 +1,7 @@
 #include "ui.hpp"
-
 #include <SDL2/SDL.h>
+
+#define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl2.h>
 #include <imgui/imgui_impl_vulkan.h>
@@ -23,22 +24,12 @@ CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevic
     auto queueFamily = queue->GetFamilyIndex();
 
     std::vector<vk::DescriptorPoolSize> descriptorPoolSizes = {
-        { vk::DescriptorType::eSampler, 1000 },
-        { vk::DescriptorType::eCombinedImageSampler, 1000 },
-        { vk::DescriptorType::eSampledImage, 1000 },
-        { vk::DescriptorType::eStorageImage, 1000 },
-        { vk::DescriptorType::eUniformTexelBuffer, 1000 },
-        { vk::DescriptorType::eStorageTexelBuffer, 1000 },
-        { vk::DescriptorType::eUniformBuffer, 1000 },
-        { vk::DescriptorType::eStorageBuffer, 1000 },
-        { vk::DescriptorType::eUniformBufferDynamic, 1000 },
-        { vk::DescriptorType::eStorageBufferDynamic, 1000 },
-        { vk::DescriptorType::eInputAttachment, 1000 },
+        { vk::DescriptorType::eCombinedImageSampler, 1 },
     };
 
     vk::DescriptorPoolCreateInfo descriptorPoolInfo;
     descriptorPoolInfo.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
-    descriptorPoolInfo.setMaxSets(1000);
+    descriptorPoolInfo.setMaxSets(1);
     descriptorPoolInfo.setPoolSizes(descriptorPoolSizes);
 
     descriptorPool = std::make_unique<vk::raii::DescriptorPool>(vkDevice->createDescriptorPool(descriptorPoolInfo));
@@ -53,7 +44,12 @@ CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevic
 
     io.Fonts->AddFontFromFileTTF("fonts/Roboto-Bold.ttf", 16.0f);
 
-    ImGui_ImplVulkan_InitInfo imguiVulkanInitInfo;
+    vk::Format colorAttachmentFormat = vk::Format::eB8G8R8A8Srgb;
+    vk::PipelineRenderingCreateInfoKHR pipelineInfo;
+    pipelineInfo.pColorAttachmentFormats = &colorAttachmentFormat;
+    pipelineInfo.colorAttachmentCount = 1;
+
+    ImGui_ImplVulkan_InitInfo imguiVulkanInitInfo = {};
     imguiVulkanInitInfo.Instance = **vkInstance;
     imguiVulkanInitInfo.PhysicalDevice = vkPhysicalDevice;
     imguiVulkanInitInfo.Device = **vkDevice;
@@ -68,16 +64,20 @@ CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevic
     imguiVulkanInitInfo.CheckVkResultFn = nullptr;
     imguiVulkanInitInfo.Allocator = nullptr;
     imguiVulkanInitInfo.UseDynamicRendering = true;
-    imguiVulkanInitInfo.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
+    imguiVulkanInitInfo.PipelineRenderingCreateInfo = pipelineInfo;
+    //imguiVulkanInitInfo.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
-    if(!ImGui_ImplSDL2_InitForVulkan(window) || !ImGui_ImplVulkan_Init(&imguiVulkanInitInfo, nullptr)) {
+    //if (!ImGui_ImplSDL2_InitForVulkan(window) || !ImGui_ImplVulkan_Init(&imguiVulkanInitInfo, nullptr)) {
+    if(!ImGui_ImplSDL2_InitForVulkan(window) || !ImGui_ImplVulkan_Init(&imguiVulkanInitInfo)) {
         printf("CVulkanUi::CVulkanUi: Failed to initialize ImGui");
     }
-
-    commandBuffers[0]->UploadImguiFonts();
-    queue->Submit(commandBuffers[0]);
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
-    commandPool->Reset();
+    //ImGui_ImplVulkan_CreateFontsTexture();
+    
+    // Doesnt appear to be needed anymore, has its own implementation.
+    //commandBuffers[0]->UploadImguiFonts();
+    //queue->Submit(commandBuffers[0]);
+    //ImGui_ImplVulkan_DestroyFontsTexture();
+    //commandPool->Reset();
 }
 
 CVulkanUi::~CVulkanUi() {
@@ -114,7 +114,7 @@ void CVulkanUi::Draw(CVulkanFrame* frame) {
 
         ImGui::EndMainMenuBar();
     }
-    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
     if(ImGui::Begin("Renderer")) {
         ImVec2 viewport = ImGui::GetContentRegionAvail();
