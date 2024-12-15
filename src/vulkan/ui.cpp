@@ -46,8 +46,7 @@ CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevic
 
     vk::Format colorAttachmentFormat = vk::Format::eB8G8R8A8Srgb;
     vk::PipelineRenderingCreateInfoKHR pipelineInfo;
-    pipelineInfo.pColorAttachmentFormats = &colorAttachmentFormat;
-    pipelineInfo.colorAttachmentCount = 1;
+    pipelineInfo.setColorAttachmentFormats(colorAttachmentFormat);
 
     ImGui_ImplVulkan_InitInfo imguiVulkanInitInfo = {};
     imguiVulkanInitInfo.Instance = **vkInstance;
@@ -65,19 +64,12 @@ CVulkanUi::CVulkanUi(SDL_Window* window, CVulkanInstance* instance, CVulkanDevic
     imguiVulkanInitInfo.Allocator = nullptr;
     imguiVulkanInitInfo.UseDynamicRendering = true;
     imguiVulkanInitInfo.PipelineRenderingCreateInfo = pipelineInfo;
-    //imguiVulkanInitInfo.ColorAttachmentFormat = VK_FORMAT_B8G8R8A8_SRGB;
 
-    //if (!ImGui_ImplSDL2_InitForVulkan(window) || !ImGui_ImplVulkan_Init(&imguiVulkanInitInfo, nullptr)) {
     if(!ImGui_ImplSDL2_InitForVulkan(window) || !ImGui_ImplVulkan_Init(&imguiVulkanInitInfo)) {
         printf("CVulkanUi::CVulkanUi: Failed to initialize ImGui");
     }
-    //ImGui_ImplVulkan_CreateFontsTexture();
-    
-    // Doesnt appear to be needed anymore, has its own implementation.
-    //commandBuffers[0]->UploadImguiFonts();
-    //queue->Submit(commandBuffers[0]);
-    //ImGui_ImplVulkan_DestroyFontsTexture();
-    //commandPool->Reset();
+
+    ImGui_ImplVulkan_CreateFontsTexture();
 }
 
 CVulkanUi::~CVulkanUi() {

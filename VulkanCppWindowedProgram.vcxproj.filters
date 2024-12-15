@@ -16,156 +16,177 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\imgui\imgui.cpp">
+    <ClCompile Include="thirdparty\imgui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\imgui\imgui_draw.cpp">
+    <ClCompile Include="thirdparty\imgui\imgui_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\imgui\imgui_impl_sdl2.cpp">
+    <ClCompile Include="thirdparty\imgui\imgui_impl_sdl2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\imgui\imgui_impl_vulkan.cpp">
+    <ClCompile Include="thirdparty\imgui\imgui_impl_vulkan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\imgui\imgui_tables.cpp">
+    <ClCompile Include="thirdparty\imgui\imgui_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\imgui\imgui_widgets.cpp">
+    <ClCompile Include="thirdparty\imgui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\imgui\imgui_demo.cpp">
+    <ClCompile Include="thirdparty\imgui\imgui_demo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\buffer.cpp">
+    <ClCompile Include="src\vulkan\buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\cmd.cpp">
+    <ClCompile Include="src\vulkan\cmd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\instance.cpp">
+    <ClCompile Include="src\vulkan\instance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\device.cpp">
+    <ClCompile Include="src\vulkan\device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\queue.cpp">
+    <ClCompile Include="src\vulkan\queue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\window.cpp">
+    <ClCompile Include="src\system\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\swapchain.cpp">
+    <ClCompile Include="src\vulkan\swapchain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\ui.cpp">
+    <ClCompile Include="src\vulkan\ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\mesh.cpp">
+    <ClCompile Include="src\vulkan\mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\pipeline.cpp">
+    <ClCompile Include="src\vulkan\pipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\renderer.cpp">
+    <ClCompile Include="src\vulkan\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\image.cpp">
+    <ClCompile Include="src\vulkan\image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics\util.cpp">
+    <ClCompile Include="src\vulkan\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\tinygltf\tiny_gltf.cc">
+    <ClCompile Include="thirdparty\tinygltf\tiny_gltf.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\ufbx\ufbx.c">
+    <ClCompile Include="thirdparty\ufbx\ufbx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\importer\gltf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\importer\obj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\importer\fbx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="platform\stb\stb_image.h">
+    <ClInclude Include="thirdparty\stb\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imconfig.h">
+    <ClInclude Include="thirdparty\imgui\imconfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imgui.h">
+    <ClInclude Include="thirdparty\imgui\imgui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imgui_impl_sdl2.h">
+    <ClInclude Include="thirdparty\imgui\imgui_impl_sdl2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imgui_impl_vulkan.h">
+    <ClInclude Include="thirdparty\imgui\imgui_impl_vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imgui_internal.h">
+    <ClInclude Include="thirdparty\imgui\imgui_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imstb_rectpack.h">
+    <ClInclude Include="thirdparty\imgui\imstb_rectpack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imstb_textedit.h">
+    <ClInclude Include="thirdparty\imgui\imstb_textedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\imgui\imstb_truetype.h">
+    <ClInclude Include="thirdparty\imgui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\buffer.hpp">
+    <ClInclude Include="src\vulkan\buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\cmd.hpp">
+    <ClInclude Include="src\vulkan\cmd.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\types.hpp">
+    <ClInclude Include="src\vulkan\types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\instance.hpp">
+    <ClInclude Include="src\vulkan\instance.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\device.hpp">
+    <ClInclude Include="src\vulkan\device.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\queue.hpp">
+    <ClInclude Include="src\vulkan\queue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\window.hpp">
+    <ClInclude Include="src\system\window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\renderer.hpp">
+    <ClInclude Include="src\vulkan\renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\pipeline.hpp">
+    <ClInclude Include="src\vulkan\pipeline.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\mesh.hpp">
+    <ClInclude Include="src\vulkan\mesh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\image.hpp">
+    <ClInclude Include="src\vulkan\image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\swapchain.hpp">
+    <ClInclude Include="src\vulkan\swapchain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\ui.hpp">
+    <ClInclude Include="src\vulkan\ui.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics\util.hpp">
+    <ClInclude Include="src\vulkan\util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\tinyobjloader\tiny_obj_loader.h">
+    <ClInclude Include="thirdparty\tinyobjloader\tiny_obj_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\tinygltf\json.hpp">
+    <ClInclude Include="thirdparty\tinygltf\json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\tinygltf\tiny_gltf.h">
+    <ClInclude Include="thirdparty\tinygltf\tiny_gltf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\ufbx\ufbx.h">
+    <ClInclude Include="thirdparty\ufbx\ufbx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\importer\importer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\importer\gltf.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\importer\obj.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\importer\fbx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

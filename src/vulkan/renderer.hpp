@@ -4,7 +4,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "window.hpp"
+#include "system/window.hpp"
 #include "instance.hpp"
 #include "device.hpp"
 #include "queue.hpp"

@@ -173,58 +173,65 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="graphics\buffer.cpp" />
-    <ClCompile Include="graphics\cmd.cpp" />
-    <ClCompile Include="graphics\device.cpp" />
-    <ClCompile Include="graphics\image.cpp" />
-    <ClCompile Include="graphics\instance.cpp" />
-    <ClCompile Include="graphics\mesh.cpp" />
-    <ClCompile Include="graphics\pipeline.cpp" />
-    <ClCompile Include="platform\tinygltf\tiny_gltf.cc" />
-    <ClCompile Include="platform\ufbx\ufbx.c" />
-    <ClCompile Include="graphics\queue.cpp" />
-    <ClCompile Include="graphics\renderer.cpp" />
-    <ClCompile Include="graphics\swapchain.cpp" />
-    <ClCompile Include="graphics\ui.cpp" />
-    <ClCompile Include="platform\imgui\imgui.cpp" />
-    <ClCompile Include="platform\imgui\imgui_demo.cpp" />
-    <ClCompile Include="platform\imgui\imgui_draw.cpp" />
-    <ClCompile Include="platform\imgui\imgui_impl_sdl2.cpp" />
-    <ClCompile Include="platform\imgui\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="platform\imgui\imgui_tables.cpp" />
-    <ClCompile Include="platform\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="graphics\util.cpp" />
-    <ClCompile Include="graphics\window.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\importer\fbx.cpp" />
+    <ClCompile Include="src\importer\gltf.cpp" />
+    <ClCompile Include="src\importer\obj.cpp" />
+    <ClCompile Include="src\vulkan\buffer.cpp" />
+    <ClCompile Include="src\vulkan\cmd.cpp" />
+    <ClCompile Include="src\vulkan\device.cpp" />
+    <ClCompile Include="src\vulkan\image.cpp" />
+    <ClCompile Include="src\vulkan\instance.cpp" />
+    <ClCompile Include="src\vulkan\mesh.cpp" />
+    <ClCompile Include="src\vulkan\pipeline.cpp" />
+    <ClCompile Include="thirdparty\tinygltf\tiny_gltf.cc" />
+    <ClCompile Include="thirdparty\ufbx\ufbx.c" />
+    <ClCompile Include="src\vulkan\queue.cpp" />
+    <ClCompile Include="src\vulkan\renderer.cpp" />
+    <ClCompile Include="src\vulkan\swapchain.cpp" />
+    <ClCompile Include="src\vulkan\ui.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="thirdparty\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\vulkan\util.cpp" />
+    <ClCompile Include="src\system\window.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="graphics\buffer.hpp" />
-    <ClInclude Include="graphics\cmd.hpp" />
-    <ClInclude Include="graphics\device.hpp" />
-    <ClInclude Include="graphics\instance.hpp" />
-    <ClInclude Include="platform\imgui\imconfig.h" />
-    <ClInclude Include="platform\imgui\imgui.h" />
-    <ClInclude Include="platform\imgui\imgui_impl_sdl2.h" />
-    <ClInclude Include="platform\imgui\imgui_impl_vulkan.h" />
-    <ClInclude Include="platform\imgui\imgui_internal.h" />
-    <ClInclude Include="platform\imgui\imstb_rectpack.h" />
-    <ClInclude Include="platform\imgui\imstb_textedit.h" />
-    <ClInclude Include="platform\imgui\imstb_truetype.h" />
-    <ClInclude Include="platform\stb\stb_image.h" />
-    <ClInclude Include="platform\tinygltf\json.hpp" />
-    <ClInclude Include="platform\tinygltf\tiny_gltf.h" />
-    <ClInclude Include="platform\tinyobjloader\tiny_obj_loader.h" />
-    <ClInclude Include="platform\ufbx\ufbx.h" />
-    <ClInclude Include="graphics\queue.hpp" />
-    <ClInclude Include="graphics\swapchain.hpp" />
-    <ClInclude Include="graphics\ui.hpp" />
-    <ClInclude Include="graphics\mesh.hpp" />
-    <ClInclude Include="graphics\renderer.hpp" />
-    <ClInclude Include="graphics\image.hpp" />
-    <ClInclude Include="graphics\pipeline.hpp" />
-    <ClInclude Include="graphics\types.hpp" />
-    <ClInclude Include="graphics\util.hpp" />
-    <ClInclude Include="graphics\window.hpp" />
+    <ClInclude Include="src\importer\fbx.hpp" />
+    <ClInclude Include="src\importer\gltf.hpp" />
+    <ClInclude Include="src\importer\obj.hpp" />
+    <ClInclude Include="src\vulkan\buffer.hpp" />
+    <ClInclude Include="src\vulkan\cmd.hpp" />
+    <ClInclude Include="src\vulkan\device.hpp" />
+    <ClInclude Include="src\vulkan\instance.hpp" />
+    <ClInclude Include="src\importer\importer.hpp" />
+    <ClInclude Include="thirdparty\imgui\imconfig.h" />
+    <ClInclude Include="thirdparty\imgui\imgui.h" />
+    <ClInclude Include="thirdparty\imgui\imgui_impl_sdl2.h" />
+    <ClInclude Include="thirdparty\imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="thirdparty\imgui\imgui_internal.h" />
+    <ClInclude Include="thirdparty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="thirdparty\imgui\imstb_textedit.h" />
+    <ClInclude Include="thirdparty\imgui\imstb_truetype.h" />
+    <ClInclude Include="thirdparty\stb\stb_image.h" />
+    <ClInclude Include="thirdparty\tinygltf\json.hpp" />
+    <ClInclude Include="thirdparty\tinygltf\tiny_gltf.h" />
+    <ClInclude Include="thirdparty\tinyobjloader\tiny_obj_loader.h" />
+    <ClInclude Include="thirdparty\ufbx\ufbx.h" />
+    <ClInclude Include="src\vulkan\queue.hpp" />
+    <ClInclude Include="src\vulkan\swapchain.hpp" />
+    <ClInclude Include="src\vulkan\ui.hpp" />
+    <ClInclude Include="src\vulkan\mesh.hpp" />
+    <ClInclude Include="src\vulkan\renderer.hpp" />
+    <ClInclude Include="src\vulkan\image.hpp" />
+    <ClInclude Include="src\vulkan\pipeline.hpp" />
+    <ClInclude Include="src\vulkan\types.hpp" />
+    <ClInclude Include="src\vulkan\util.hpp" />
+    <ClInclude Include="src\system\window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
@@ -243,7 +250,7 @@ $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
     <PublicIncludeDirectories>$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
-    <IncludePath>$(ProjectDir)\platform;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\thirdparty;$(ProjectDir)\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Bin

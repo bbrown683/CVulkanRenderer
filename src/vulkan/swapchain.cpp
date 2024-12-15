@@ -11,6 +11,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 
+#include <imgui/imgui_impl_vulkan.h>
 #include "instance.hpp"
 #include "device.hpp"
 #include "queue.hpp"
@@ -89,6 +90,7 @@ void CVulkanSwapchain::Recreate() {
     device->waitIdle();
     createSwapchain();
     createImageViews();
+    ImGui_ImplVulkan_SetMinImageCount(imageCount);
 }
 
 vk::SurfaceCapabilitiesKHR CVulkanSwapchain::GetVkSurfaceCapabilities() {
