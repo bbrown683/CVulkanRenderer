@@ -6,8 +6,9 @@ A self-learning project to recreate the popular animation tool [Blender](https:/
 * Basically everything
 
 ## Dependencies
+* [VulkanSDK (with SDL2 and GLM)](https://www.lunarg.com/vulkan-sdk/)
 * [stb](https://github.com/nothings/stb)
-* [imgui](https://github.com/ocornut/imgui)
+* [imgui (docking branch)](https://github.com/ocornut/imgui/tree/docking)
 * [ufbx](https://github.com/ufbx/ufbx)
 * [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader)
 * [tinygltf](https://github.com/syoyo/tinygltf)
